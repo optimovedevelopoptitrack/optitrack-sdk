@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script  src="C:\Development\SDK\require.js"></script>
+<script  src="C:\Development\SDK\OptitrackSDK.js"></script>
+<script>
+    self.OptimoveSDKObj.initialize( null,  self.OptimoveSDK.OptimoveSDKConfig, mycallback );
+
+    function mycallback(status)
+    {
+        console.log('testing my call back status = ' + status);
+        self.OptimoveSDKObj.setUserId('yossi');
+        self.OptimoveSDKObj.logPageVisitEvent('http://www.example.com', 'exmaple page');
+       
+    }
+</script>
+<title>Page Title</title>
+</head>
+<body>
+
+<h1>This is a OptiTrack SDK</h1>
+<p>This is a paragraph.</p>
+
+</body>
+</html>
