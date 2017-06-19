@@ -69,16 +69,6 @@ var OptimoveSDK = (function () {
 	};
 
 
-	var prepareWindow = function () {
-
-		if (window._paq == undefined) {
-			window._paq = [];
-		} else {
-			window._paq = _paq || [];
-		}
-	}();
-
-
 	function OptimoveSDK(sdkConfig) {
 
 		// ------ Object Private members ------
@@ -128,19 +118,13 @@ var OptimoveSDK = (function () {
 		// Gets the Optimove SDK Verion
 		// ---------------------------------------
 		this.setSDKUserOptions = function (userOptions) {
-			if (_optimove_log == true)
-				console.log('OptimoveSDK: setSDKUserOptions():  Enter');
-
+			
 			var propNames = Object.getOwnPropertyNames(userOptions);
             var THIS = this;
 			propNames.forEach(function (optionPropName) {
 				handleUserOption(THIS, optionPropName, userOptions);
 			});
 
-			this.sendLoadPage();
-
-			if (_optimove_log == true)
-				console.log('OptimoveSDK: setSDKUserOptions():  Exit');
 		};
 
 		
@@ -163,10 +147,7 @@ var OptimoveSDK = (function () {
 		// ---------------------------------------
 		this.logPageVisitEvent = function (customURL, pageTitle) {
 
-			if(_sdk_init_options.enableOptitrackSupport == true)
-			{
-				logOptitrackLoadPage(this, customURL, pageTitle);
-			}
+			logOptitrackLoadPage(this, customURL, pageTitle);
 			
 		}
 
@@ -197,7 +178,6 @@ var OptimoveSDK = (function () {
 
 		
 
-		
 		// --------------  Private Member Functions -------------- 
 
 		// ---------------------------------------
@@ -233,9 +213,7 @@ var OptimoveSDK = (function () {
 		// ---------------------------------------
 		var  logOptitrackEvent = function (THIS, eventId, event_parameters) {
 			
-
-			
-			
+	
 		};
 
 		
@@ -319,6 +297,7 @@ var OptimoveSDK = (function () {
 							_tracker.setCustomDimension(CustomDimensionsMapping.originalVisitorId, origVisitorId);
 							_tracker.setUserId(updatedUserId);
 							_userId = updatedUserId;
+							updateCookieMatcher(THIS, updatedUserId);
 						}
 						
 					}
@@ -331,7 +310,11 @@ var OptimoveSDK = (function () {
 
 		};
 
-		
+		updateCookieMatcher = function (THIS, updatedUserId)
+		{
+
+
+		}
 
 		// ---------------------------------------
 		// Function: getOptitrackVisitorInfo 
@@ -357,19 +340,7 @@ var OptimoveSDK = (function () {
 
 		// ------------------------------ Optitrack Private Utility member functions ------------------------------ 
 
-		// ---------------------------------------
-		// Function: validatePageURL 
-		// Args: email
-		// validats  the email with regexpress
-		// taken from https://mathiasbynens.be/demo/url-regex
-		// the selectd version of: @stephenhay
-		// ---------------------------------------
-		var  validatePageURL = function (customURL) {
-			
-    		var re = /(https?|http?|ftp):\/\/[^\s\/$.?#].[^\s]*$/;
-    		return re.test(customURL);
-		};
-		
+
 		// ---------------------------------------
 		// Function: getOptitrackVisitorInfo 
 		// Args: updatedUserId
@@ -387,6 +358,20 @@ var OptimoveSDK = (function () {
 			} 
 
 		};
+
+		// ---------------------------------------
+		// Function: validatePageURL 
+		// Args: email
+		// validats  the email with regexpress
+		// taken from https://mathiasbynens.be/demo/url-regex
+		// the selectd version of: @stephenhay
+		// ---------------------------------------
+		var  validatePageURL = function (customURL) {
+			
+    		var re = /(https?|http?|ftp):\/\/[^\s\/$.?#].[^\s]*$/;
+    		return re.test(customURL);
+		};
+
 
 		// ---------------------------------------
 		// Function: validateEmail 
