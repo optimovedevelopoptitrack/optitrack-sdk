@@ -292,7 +292,7 @@ var OptimoveSDK = (function () {
 				if(pageStitchData.OptimoveStitchDataExist == false)
 				{
 					var browserURL = window.location.pathname;
-					let browserStitchData = getOptimoveStitchData(browserURL);
+					let browserStitchData = getOptimoveStitchData(THIS, browserURL);
 
 					if(browserStitchData.OptimoveStitchDataExist == true)
 					{
@@ -306,10 +306,8 @@ var OptimoveSDK = (function () {
 				
 				if (stitchData == true && typeof _tracker != 'undefined') 
 				{
-					let visitorId = _tracker.getVisitorId();
-					_tracker.setCustomDimension(CustomDimensionsMapping.stitchPubCustomerId, stitchData.OptimovePublicCustomerId);
-					_tracker.setCustomDimension(CustomDimensionsMapping.stitchVisitorId, visitorId);
-					_tracker.trackEvent(LogEventCategory, StitchUsersEvent)
+					logOptitrackEventStitch(THIS, stitchData.OptimovePublicCustomerId );
+					setOptitrackUserId(THIS, stitchData.OptimovePublicCustomerId );
 				}
 				
 
@@ -319,6 +317,26 @@ var OptimoveSDK = (function () {
 
 		};
 
+				
+		// ---------------------------------------
+		// Function: logOptitrackEventStitch 
+		// Args: OptimovePublicCustomerId
+		// Gets the data from the URL which is used by 
+		// Optimove Stitch Flow.
+		// return - JSON obj containng the optimovePublicCustomerId
+		//  and the status.
+		// ---------------------------------------
+		var  logOptitrackEventStitch = function(THIS, optimovePublicCustomerId)
+		{
+			if (stitchData == true && typeof _tracker != 'undefined') 
+			{
+				let origiVisitorId = _tracker.getVisitorId();
+				_tracker.setCustomDimension(CustomDimensionsMapping.stitchPubCustomerId, optimovePublicCustomerId);
+				_tracker.setCustomDimension(CustomDimensionsMapping.stitchVisitorId, origiVisitorId);
+				_tracker.trackEvent(LogEventCategory, StitchUsersEvent)
+			}
+		}
+
 		// ---------------------------------------
 		// Function: getOptimoveStitchData 
 		// Args: URL
@@ -327,7 +345,7 @@ var OptimoveSDK = (function () {
 		// return - JSON obj containng the optimovePublicCustomerId
 		//  and the status.
 		// ---------------------------------------
-		var  getOptimoveStitchData = function(currURL)
+		var  getOptimoveStitchData = function(THIS, currURL)
 		{
 			// We might have not Load the Piwik Yet
 			var jsonData = {};
