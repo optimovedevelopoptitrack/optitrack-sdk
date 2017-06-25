@@ -31,25 +31,34 @@ var OptimoveSDK = (function () {
 
 
 	var clientEndPoint = 'http://35.184.87.239/';
-	var clientSiteID = 801;
+	var clientSiteId = 801;
 	var clientSupportRT = true;
 	var clientSupportOT = true;
 	var MinimumEmailAddressLength = 3;
 	var heartBeatTimer = 0;
+	var cookieMatcherId = 2222;
+	var supportUserEmailStitch = true;
 	var CustomDimensionsMapping = {
 
 		originalVisitorId: 1,
-		email: 2
+		email: 1,		
+		convertedVisitorId: 6,
+		userId: 7,
+		stitchPubCustomerId: 1,
+		stitchVisitorId: 2,
 
 	};
 
 	var SDKConfig = {
 		tenantToken: undefined,
 		optitrackEndpoint: clientEndPoint,
-		siteID: clientSiteID,
+		siteId: clientSiteId,
 		enableOptitrackSupport: clientSupportOT,
 		enableRTSupport: clientSupportRT,
-		otEnableHeartBeatTimer: heartBeatTimer 
+		otEnableHeartBeatTimer: heartBeatTimer,
+		otSupportCookieMatcher: false,
+		optimoveCookieMatcherId: cookieMatcherId,
+		otsupportUserEmailStitch: supportUserEmailStitch
 	};
 
 	var UserOptions = {
@@ -83,6 +92,10 @@ var OptimoveSDK = (function () {
 		var _piwikURL = null;
 		var _tracker = null;
 		var _sdkConfig = null;
+		var LogEventCategory = 'LogEvent';
+		var SetUserIdEvent = 'SetUserIdEvent';
+		var SetEmailEvent = 'SetEmailEvent';
+		var StitchUsersEvent = 'StitchUsersEvent';
 // ------------------------------ SDK public member functions ------------------------------
 
 		// ---------------------------------------
@@ -147,7 +160,7 @@ var OptimoveSDK = (function () {
 		// ---------------------------------------
 		this.logPageVisitEvent = function (customURL, pageTitle) {
 
-			logOptitrackLoadPage(this, customURL, pageTitle);
+			logOptitrackPageVisit(this, customURL, pageTitle);
 			
 		}
 
@@ -167,39 +180,15 @@ var OptimoveSDK = (function () {
 		
 		// ---------------------------------------
 		// Function: logEvent 
-		// Args: category, action, name, value
-		// Log Event 
+		// Args: eventId, eventParameters
+		// Log Custom Event 
 		// ---------------------------------------
 		this.logEvent = function (eventId, eventParameters) {
 
-			logOptitrackEvent(this,eventId, eventParameters);
+			logOptitrackCustomEvent(this,eventId, eventParameters);
 			
 		}
-
-		
-
-		// --------------  Private Member Functions -------------- 
-
-		// ---------------------------------------
-		// Function: setSDKLogMode 
-		// Args: None
-		// Sets the Optimove SDK Logging Mode
-		// ---------------------------------------
-		var  setSDKLogMode = function (logMode) {
-			if (logMode == 'debug') {
-				if (_optimove_log == false)
-					console.log('OptimoveSDK: setSDKLogMode(): Starting Log Mode');
-				_optimove_log = true;
-
-			} else {
-				if (_optimove_log == true)
-					console.log('OptimoveSDK: setSDKLogMode(): Stopping Log Mode');
-				_optimove_log = false;
-			}
-		};
-
-
-
+			
 		
 // ------------------------------ Optitrack Private member functions ------------------------------ 
 
@@ -207,30 +196,53 @@ var OptimoveSDK = (function () {
 	
 
 		// ---------------------------------------
-		// Function: logOptitrackEvent 
+		// Function: logOptitrackCustomEvent 
 		// Args: category, action, name, value
 		// Sets the Event in Optitrack Infrastructure
 		// ---------------------------------------
-		var  logOptitrackEvent = function (THIS, eventId, event_parameters) {
+		var  logOptitrackCustomEvent = function (THIS, eventId, event_parameters) {
 			
-	
+			try{
+				if (typeof _tracker != 'undefined') {
+				
+					_tracker.setCustomDimension(2, "inVisit2");
+					_tracker.setCustomDimension(3, "inVisit3");
+					_tracker.setCustomDimension(6, "inAction1");
+					_tracker.setCustomDimension(7, "inAction2");
+					_tracker.setCustomDimension(8, "inAction3");
+					//_tracker.setCustomDimension(25, "inAction25");
+					//_tracker.setCustomDimension(26, "inAction26");
+					// _tracker.setCustomDimension(6, "6");
+					// _tracker.setCustomDimension(7, "7");
+					// _tracker.setCustomDimension(8, "8");
+					// _tracker.setCustomDimension(9, "9");
+
+					_tracker.trackEvent(LogEventCategory, "eventX");
+				}else{
+					throw "_tracker is undefined !!";
+				}
+
+			}catch(error){
+
+			}			
+			
 		};
 
 		
 
 		// ---------------------------------------
-		// Function: logOptitrackLoadPage 
-		// Args: customURL, pageTitle
+		// Function: logOptitrackPageVisit 
+		// Args: pageURL, pageTitle
 		// Send Optitrack Infrastructure with the Loading Page Event.
 		// ---------------------------------------
-		var logOptitrackLoadPage = function (THIS, customURL, pageTitle) {
+		var logOptitrackPageVisit = function (THIS, pageURL, pageTitle) {
 
 			try{
 					
-				let isValidURL = validatePageURL(customURL);
+				let isValidURL = validatePageURL(pageURL);
 				if(isValidURL == false)
 				{
-					throw 'customURL-' + customURL  + 'is not a valid URL';
+					throw 'customURL-' + pageURL  + 'is not a valid URL';
 				}
 				_tracker.enableLinkTracking(true);
 
@@ -239,8 +251,19 @@ var OptimoveSDK = (function () {
 					_tracker.enableHeartBeatTimer(_sdkConfig.otEnableHeartBeatTimer);
 				}
 				
-				_tracker.setCustomUrl(customURL);
+				_tracker.setCustomUrl(pageURL);
 				_tracker.trackPageView(pageTitle);
+
+				if(_sdkConfig.otSupportCookieMatcher == true)
+				{
+					updateCookieMatcher(THIS, updatedUserId);
+				}
+
+				if(_sdkConfig.otsupportUserEmailStitch == true)
+				{
+					processEmailStitch(THIS, customURL);
+				}
+
 
 			}catch(error){
 
@@ -249,6 +272,98 @@ var OptimoveSDK = (function () {
 		
 		};
 
+		
+
+		// ---------------------------------------
+		// Function: processEmailStitch 
+		// Args: pageURL
+		// Sets the email in Optitrack Infrastructure
+		// the Stitch will try to find th estitch data in
+		// both the URL supplied by the PageVisit event and the
+		// URL extracted from the window.location
+		// ---------------------------------------
+		var processEmailStitch = function (THIS, pageURL) {
+			// We might have not Load the Piwik Yet
+			
+			try {
+				let stitchDataFound = false;
+				let stitchData = {}
+				let pageStitchData = getOptimoveStitchData(pageURL);
+				if(pageStitchData.OptimoveStitchDataExist == false)
+				{
+					var browserURL = window.location.pathname;
+					let browserStitchData = getOptimoveStitchData(browserURL);
+
+					if(browserStitchData.OptimoveStitchDataExist == true)
+					{
+						stitchData  = browserStitchData;
+						stitchDataFound = true;
+					}
+				}else{
+					stitchData  = pageStitchData;
+					stitchDataFound = true;
+				}
+				
+				if (stitchData == true && typeof _tracker != 'undefined') 
+				{
+					let visitorId = _tracker.getVisitorId();
+					_tracker.setCustomDimension(CustomDimensionsMapping.stitchPubCustomerId, stitchData.OptimovePublicCustomerId);
+					_tracker.setCustomDimension(CustomDimensionsMapping.stitchVisitorId, visitorId);
+					_tracker.trackEvent(LogEventCategory, StitchUsersEvent)
+				}
+				
+
+			} catch (err) {
+				
+			}
+
+		};
+
+		// ---------------------------------------
+		// Function: getOptimoveStitchData 
+		// Args: URL
+		// Gets the data from the URL which is used by 
+		// Optimove Stitch Flow.
+		// return - JSON obj containng the optimovePublicCustomerId
+		//  and the status.
+		// ---------------------------------------
+		var  getOptimoveStitchData = function(currURL)
+		{
+			// We might have not Load the Piwik Yet
+			var jsonData = {};
+			jsonData["OptimoveStitchDataExist"] = false;
+			let optimovePublicCustomerId = "OptimovePublicCustomerId";
+			let optimoveStitchFlow = "OptimoveStitchFlow";
+			let isStitchFlow = false;
+			try {
+				let parts = currURL.split('&');				
+				if(parts.length > 0)
+				{
+					parts.forEach((item, index) => {
+						
+						if(item.search(optimoveStitchFlow) > -1)
+						{	
+							isStitchFlow = item.slice(optimoveStitchFlow.length+1) == 'true';														
+						}else{
+							isStitchFlow = false;
+						}
+
+						if(isStitchFlow == true && item.search(optimovePublicCustomerId)  > -1)
+						{	
+							publicCustomerId = item.slice(optimovePublicCustomerId.length+1)
+							jsonData["OptimovePublicCustomerId"] = publicCustomerId;
+							jsonData["OptimoveStitchDataExist"] = true;
+						}
+
+					})
+				}
+								
+			} catch (err) {
+				
+			}
+			return jsonData;
+
+		};
 
 
 		// ---------------------------------------
@@ -257,8 +372,7 @@ var OptimoveSDK = (function () {
 		// Sets the email in Optitrack Infrastructure
 		// ---------------------------------------
 		var logOptitrackUserEmail = function (THIS, email) {
-			// We might have not Load the Piwik Yet
-			
+					
 			try {
 				let isValidEmail = validateEmail(email);
 				if (isValidEmail == false) {
@@ -266,7 +380,7 @@ var OptimoveSDK = (function () {
 					throw 'email ' + email + ' is not valid';
 				}
 				_tracker.setCustomDimension(CustomDimensionsMapping.email, email);
-				_tracker.trackEvent('Event', 'Email')
+				_tracker.trackEvent(LogEventCategory, SetEmailEvent);
 
 			} catch (err) {
 				
@@ -294,10 +408,16 @@ var OptimoveSDK = (function () {
 						if(existUserId != updatedUserId)
 						{
 							var origVisitorId = _tracker.getVisitorId();
+							
 							_tracker.setCustomDimension(CustomDimensionsMapping.originalVisitorId, origVisitorId);
 							_tracker.setUserId(updatedUserId);
+							logSetUserIdEvent(THIS, origVisitorId, updatedUserId);
 							_userId = updatedUserId;
-							updateCookieMatcher(THIS, updatedUserId);
+							if(_sdkConfig.otSupportCookieMatcher == true)
+							{
+								updateCookieMatcher(THIS, updatedUserId);
+							}
+							
 						}
 						
 					}
@@ -310,9 +430,62 @@ var OptimoveSDK = (function () {
 
 		};
 
-		updateCookieMatcher = function (THIS, updatedUserId)
-		{
+		// ---------------------------------------
+		// Function: logSetUserIdEvent 
+		// Args: THIS, origVisitorId, updatedUserId
+		// Sets the in Optitrack Infrastructure User ID
+		// ---------------------------------------
+		var logSetUserIdEvent = function (THIS, origVisitorId, updatedUserId) {
+			
+			try {
+				_tracker.setCustomDimension(CustomDimensionsMapping.convertedVisitorId, origVisitorId);
+				_tracker.setCustomDimension(CustomDimensionsMapping.userId, updatedUserId);
+				_tracker.trackEvent(LogEventCategory, SetUserIdEvent);
+			} catch (err) {
+				
+			}
 
+		};
+
+		// ---------------------------------------
+		// Function: updateCookieMatcher 
+		// Args: None
+		// Sets the Optimove SDK Logging Mode
+		// ---------------------------------------
+		var updateCookieMatcher = function (THIS, updatedUserId)
+		{
+			
+			let cookieMatcherUserId = null;
+			if(_userId != null)
+			{
+				cookieMatcherUserId = _userId;
+			}else{
+			   cookieMatcherUserId = _tracker.getVisitorId();
+			}
+
+			setOptimoveCookie(cookieMatcherUserId);
+
+			matchCookie(_sdkConfig.siteId, _sdkConfig.optimoveCookieMatcherId);
+
+
+			let setOptimoveCookie = function(cookieMatcherUserId) { 
+			
+				var setCookieUrl = "https://gcm.optimove.events/setCookie?optimove_id="+cookieMatcherUserId; 
+				var setCookieNode = document.createElement("img"); 
+				setCookieNode.style.display = "none"; 
+				setCookieNode.setAttribute("src", setCookieUrl); 
+				document.body.appendChild(setCookieNode); 
+			};
+	
+
+			matchCookie = function(tenantId, optimoveCookieMatcherId) { 
+				//var url = "https://cm.g.doubleclick.net/pixel?google_nid=OptimoveCookieMatcherID&google_cm&tenant_id=TenantID"; 
+				var url = "https://cm.g.doubleclick.net/pixel?google_nid=" + optimoveCookieMatcherId + "&google_cm&tenant_id=" +tenantId; 
+				var node = document.createElement("img"); 
+				node.style.display = "none"; 
+				node.setAttribute("src", url); 
+				document.body.appendChild(node); 
+			} 
 
 		}
 
@@ -462,7 +635,7 @@ var OptimoveSDK = (function () {
 		// ---------------------------------------
 		var getOptiTrackTenantIdFromConfig = function (SDKConfig){
 
-			return   SDKConfig.siteID;
+			return   SDKConfig.siteId;
 		};
 
 		// ---------------------------------------
