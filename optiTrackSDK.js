@@ -44,6 +44,8 @@ var OptimoveSDK = (function () {
 		email: 1,		
 		convertedVisitorId: 6,
 		userId: 7,
+		stitchPubCustomerId: 1,
+		stitchVisitorId: 2,
 
 	};
 
@@ -93,6 +95,7 @@ var OptimoveSDK = (function () {
 		var LogEventCategory = 'LogEvent';
 		var SetUserIdEvent = 'SetUserIdEvent';
 		var SetEmailEvent = 'SetEmailEvent';
+		var StitchUsersEvent = 'StitchUsersEvent';
 // ------------------------------ SDK public member functions ------------------------------
 
 		// ---------------------------------------
@@ -275,22 +278,90 @@ var OptimoveSDK = (function () {
 		// Function: processEmailStitch 
 		// Args: pageURL
 		// Sets the email in Optitrack Infrastructure
+		// the Stitch will try to find th estitch data in
+		// both the URL supplied by the PageVisit event and the
+		// URL extracted from the window.location
 		// ---------------------------------------
 		var processEmailStitch = function (THIS, pageURL) {
 			// We might have not Load the Piwik Yet
 			
 			try {
-				
-				if (typeof _tracker != 'undefined') 
+				let stitchDataFound = false;
+				let stitchData = {}
+				let pageStitchData = getOptimoveStitchData(pageURL);
+				if(pageStitchData.OptimoveStitchDataExist == false)
 				{
-					_tracker.setCustomDimension(CustomDimensionsMapping.email, email);
-					_tracker.trackEvent(LogEventCategory, SetEmailEvent)
+					var browserURL = window.location.pathname;
+					let browserStitchData = getOptimoveStitchData(browserURL);
+
+					if(browserStitchData.OptimoveStitchDataExist == true)
+					{
+						stitchData  = browserStitchData;
+						stitchDataFound = true;
+					}
+				}else{
+					stitchData  = pageStitchData;
+					stitchDataFound = true;
+				}
+				
+				if (stitchData == true && typeof _tracker != 'undefined') 
+				{
+					let visitorId = _tracker.getVisitorId();
+					_tracker.setCustomDimension(CustomDimensionsMapping.stitchPubCustomerId, stitchData.OptimovePublicCustomerId);
+					_tracker.setCustomDimension(CustomDimensionsMapping.stitchVisitorId, visitorId);
+					_tracker.trackEvent(LogEventCategory, StitchUsersEvent)
 				}
 				
 
 			} catch (err) {
 				
 			}
+
+		};
+
+		// ---------------------------------------
+		// Function: getOptimoveStitchData 
+		// Args: URL
+		// Gets the data from the URL which is used by 
+		// Optimove Stitch Flow.
+		// return - JSON obj containng the optimovePublicCustomerId
+		//  and the status.
+		// ---------------------------------------
+		var  getOptimoveStitchData = function(currURL)
+		{
+			// We might have not Load the Piwik Yet
+			var jsonData = {};
+			jsonData["OptimoveStitchDataExist"] = false;
+			let optimovePublicCustomerId = "OptimovePublicCustomerId";
+			let optimoveStitchFlow = "OptimoveStitchFlow";
+			let isStitchFlow = false;
+			try {
+				let parts = currURL.split('&');				
+				if(parts.length > 0)
+				{
+					parts.forEach((item, index) => {
+						
+						if(item.search(optimoveStitchFlow) > -1)
+						{	
+							isStitchFlow = item.slice(optimoveStitchFlow.length+1) == 'true';														
+						}else{
+							isStitchFlow = false;
+						}
+
+						if(isStitchFlow == true && item.search(optimovePublicCustomerId)  > -1)
+						{	
+							publicCustomerId = item.slice(optimovePublicCustomerId.length+1)
+							jsonData["OptimovePublicCustomerId"] = publicCustomerId;
+							jsonData["OptimoveStitchDataExist"] = true;
+						}
+
+					})
+				}
+								
+			} catch (err) {
+				
+			}
+			return jsonData;
 
 		};
 
