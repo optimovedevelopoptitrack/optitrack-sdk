@@ -205,19 +205,19 @@ var OptimoveSDK = (function () {
 			try{
 				if (typeof _tracker != 'undefined') {
 				
-					_tracker.setCustomDimension(2, "inVisit2");
-					_tracker.setCustomDimension(3, "inVisit3");
-					_tracker.setCustomDimension(6, "inAction1");
-					_tracker.setCustomDimension(7, "inAction2");
-					_tracker.setCustomDimension(8, "inAction3");
-					//_tracker.setCustomDimension(25, "inAction25");
-					//_tracker.setCustomDimension(26, "inAction26");
-					// _tracker.setCustomDimension(6, "6");
-					// _tracker.setCustomDimension(7, "7");
-					// _tracker.setCustomDimension(8, "8");
-					// _tracker.setCustomDimension(9, "9");
+					if(eventId == 'Action'){
 
-					_tracker.trackEvent(LogEventCategory, "eventX");
+						var propNames = Object.getOwnPropertyNames(event_parameters);
+						var THIS = this;
+						propNames.forEach(function (optionPropName) {
+							
+							_tracker.setCustomDimension(1, event_parameters[optionPropName]);
+						});
+						
+						_tracker.trackEvent(LogEventCategory, eventId);
+					}
+									
+					
 				}else{
 					throw "_tracker is undefined !!";
 				}
