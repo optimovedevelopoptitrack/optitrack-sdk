@@ -9,14 +9,14 @@ var supportUserEmailStitch = true;
 	
 var sdkConfig={
   "tenantToken": "undefined",
-  "optitrackEndpoint": "undefined",
-  "siteId": "clientSiteId",
-  "enableOptitrackSupport": "undefined",
-  "enableRTSupport": "undefined",
-  "otEnableHeartBeatTimer": "undefined",
-  "otSupportCookieMatcher": "undefined",
-  "optimoveCookieMatcherId": "cookieMatcherId",
-  "otsupportUserEmailStitch": "supportUserEmailStitch",
+  "optitrackEndpoint": clientEndPoint,
+  "siteId": clientSiteId,
+  "enableOptitrackSupport": true,
+  "enableRTSupport": true,
+  "otEnableHeartBeatTimer": (heartBeatTimer > 0),
+  "otSupportCookieMatcher": (cookieMatcherId != null),
+  "optimoveCookieMatcherId": cookieMatcherId,
+  "otsupportUserEmailStitch": supportUserEmailStitch,
   "UserOptions": {
     "useWaterMark": "undefined",
     "backgroundMode": "undefined",
@@ -32,21 +32,21 @@ var sdkConfig={
           "name": "action_name",
           "id": "1",
           "type": "String",
-          "optiTrackDimensionId": "1"
+          "optiTrackDimensionId": "6"
         },
         "action_value": {
           "optional": "false",
           "name": "action_value",
           "id": "2",
           "type": "Number",
-          "optiTrackDimensionId": "2"
+          "optiTrackDimensionId": "7"
         },
         "action_price": {
           "optional": "false",
           "name": "action_price",
           "id": "3",
           "type": "Number",
-          "optiTrackDimensionId": "3"
+          "optiTrackDimensionId": "8"
         }
       }
     },
@@ -60,21 +60,21 @@ var sdkConfig={
           "name": "sourcePublicCustomerId",
           "id": "1",
           "type": "String",
-          "optiTrackDimensionId": "1"
+          "optiTrackDimensionId": "6"
         },
         "sourceVisitorId": {
           "optional": "true",
           "name": "sourceVisitorId",
           "id": "2",
           "type": "String",
-          "optiTrackDimensionId": "2"
+          "optiTrackDimensionId": "7"
         },
         "targetVsitorId": {
           "optional": "false",
           "name": "targetVsitorId",
           "id": "3",
           "type": "String",
-          "optiTrackDimensionId": "3"
+          "optiTrackDimensionId": "8"
         }
       }
     }
