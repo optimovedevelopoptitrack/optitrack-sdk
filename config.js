@@ -23,7 +23,7 @@ var sdkConfig={
     "popupCallback": "undefined"
   },
   "events": {
-    "Action": {
+    "Event-1": {
       "supportedOnOptitrack": "true",
       "supportedOnRealTime": "true",
       "parameters": {
@@ -38,14 +38,97 @@ var sdkConfig={
           "optional": "false",
           "name": "action_value",
           "id": "2",
-          "type": "Number",
+          "type": "int",
           "optiTrackDimensionId": "7"
         },
         "action_price": {
           "optional": "false",
           "name": "action_price",
           "id": "3",
-          "type": "Number",
+          "type": "int",
+          "optiTrackDimensionId": "8"
+        }
+      }
+    },
+
+    "Event-2": {
+      "supportedOnOptitrack": "true",
+      "supportedOnRealTime": "true",
+      "parameters": {
+        "action_name": {
+          "optional": "false",
+          "name": "action_name",
+          "id": "1",
+          "type": "String",
+          "optiTrackDimensionId": "6"
+        },
+        "action_value": {
+          "optional": "false",
+          "name": "action_value",
+          "id": "2",
+          "type": "int",
+          "optiTrackDimensionId": "7"
+        },
+        "action_price": {
+          "optional": "false",
+          "name": "action_price",
+          "id": "3",
+          "type": "int",
+          "optiTrackDimensionId": "8"
+        }
+      }
+    },
+
+    "Event-3": {
+      "supportedOnOptitrack": "true",
+      "supportedOnRealTime": "true",
+      "parameters": {
+        "action_name": {
+          "optional": "false",
+          "name": "action_name",
+          "id": "1",
+          "type": "String",
+          "optiTrackDimensionId": "6"
+        },
+        "action_value": {
+          "optional": "false",
+          "name": "action_value",
+          "id": "2",
+          "type": "int",
+          "optiTrackDimensionId": "7"
+        },
+        "action_price": {
+          "optional": "false",
+          "name": "action_price",
+          "id": "3",
+          "type": "int",
+          "optiTrackDimensionId": "8"
+        }
+      }
+    },
+    "Event-4": {
+      "supportedOnOptitrack": "true",
+      "supportedOnRealTime": "true",
+      "parameters": {
+        "action_name": {
+          "optional": "false",
+          "name": "action_name",
+          "id": "1",
+          "type": "String",
+          "optiTrackDimensionId": "6"
+        },
+        "action_value": {
+          "optional": "false",
+          "name": "action_value",
+          "id": "2",
+          "type": "int",
+          "optiTrackDimensionId": "7"
+        },
+        "action_price": {
+          "optional": "false",
+          "name": "action_price",
+          "id": "3",
+          "type": "int",
           "optiTrackDimensionId": "8"
         }
       }
