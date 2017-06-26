@@ -236,6 +236,11 @@ var OptimoveSDK = (function () {
 			
 			try {
 				let stitchDataFound = false;
+				let stitchEvent = "stitchEvent"
+				let sourcePublicCustomerId = "sourcePublicCustomerId";
+				let sourceVisitorId = "sourceVisitorId";
+				let targetVsitorId = "targetVsitorId";
+
 				let stitchData = {}
 				let pageStitchData = getOptimoveStitchData(pageURL);
 				if(pageStitchData.OptimoveStitchDataExist == false)
@@ -256,8 +261,15 @@ var OptimoveSDK = (function () {
 				if (stitchData == true && typeof _tracker != 'undefined') 
 				{
 					let visitorId = _tracker.getVisitorId();
-					_tracker.setCustomDimension(CustomDimensionsMapping.stitchPubCustomerId, stitchData.OptimovePublicCustomerId);
-					_tracker.setCustomDimension(CustomDimensionsMapping.stitchVisitorId, visitorId);
+					if(stitchData.OptimovePublicCustomerId != null)
+					{
+						//Stitch a Customer
+						_tracker.setCustomDimension(_sdkConfig.events[stitchEvent].parameters[sourcePublicCustomerId].optiTrackDimensionId, stitchData.OptimovePublicCustomerId);
+					}else{
+						_tracker.setCustomDimension(_sdkConfig.events[stitchEvent].parameters[sourceVisitorId].optiTrackDimensionId, stitchData.optimoveVisitorId);
+					}
+					
+					_tracker.setCustomDimension(_sdkConfig.events[stitchEvent].parameters[targetVsitorId], visitorId);
 					_tracker.trackEvent(LogEventCategory, StitchUsersEvent)
 				}
 				
@@ -265,8 +277,8 @@ var OptimoveSDK = (function () {
 			} catch (err) {
 				
 			}
-
 		};
+
 
 		// ---------------------------------------
 		// Function: getOptimoveStitchData 
@@ -281,9 +293,12 @@ var OptimoveSDK = (function () {
 			// We might have not Load the Piwik Yet
 			var jsonData = {};
 			jsonData["OptimoveStitchDataExist"] = false;
-			let optimovePublicCustomerId = "OptimovePublicCustomerId";
-			let optimoveStitchFlow = "OptimoveStitchFlow";
-			let isStitchFlow = false;
+			let optimovePublicCustomerId 	= "OptimovePublicCustomerId";
+			let optimoveVisitorId 			= "optimoveVisitorId";
+			let optimoveStitchFlow 			= "OptimoveStitchFlow";
+			let optimoveStitchDataExist 	= "OptimoveStitchDataExist";
+			let isStitchFlow 				= false;
+
 			try {
 				let parts = currURL.split('&');				
 				if(parts.length > 0)
@@ -297,11 +312,20 @@ var OptimoveSDK = (function () {
 							isStitchFlow = false;
 						}
 
-						if(isStitchFlow == true && item.search(optimovePublicCustomerId)  > -1)
+						if(isStitchFlow == true)
 						{	
-							publicCustomerId = item.slice(optimovePublicCustomerId.length+1)
-							jsonData["OptimovePublicCustomerId"] = publicCustomerId;
-							jsonData["OptimoveStitchDataExist"] = true;
+							if(item.search(optimovePublicCustomerId)  > -1)
+							{
+								let publicCustomerId = item.slice(optimovePublicCustomerId.length+1)
+								jsonData[optimovePublicCustomerId] = publicCustomerId;
+							}
+							if(item.search(optimoveVisitorId)  > -1)
+							{
+								let vistorId = item.slice(optimoveVisitorId.length+1)
+								jsonData[optimoveVisitorId] = vistorId;
+							}
+							
+							jsonData[optimoveStitchDataExist] = true;
 						}
 
 					})
@@ -630,10 +654,7 @@ var OptimoveSDK = (function () {
 	
 
 	return {
-		// OptimoveSDKConfig: SDKConfig,				
-		// OptimoveCreateSDK: OptimoveSDK,
-		// OptimoveSDKUserOptions: UserOptions,
-		// OptimoveEventContext: EventContext,
+	
 		OptimoveSDKObj: window.OptimoveSDKObj
 		
 	}
