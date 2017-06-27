@@ -6,6 +6,7 @@ var MinimumEmailAddressLength = 3;
 var heartBeatTimer = 0;
 var cookieMatcherId = null;
 var supportUserEmailStitch = true;
+var optitTrackerName = "optitTrackerv3.03.js"
 	
 var sdkConfig={
   "tenantToken": "undefined",

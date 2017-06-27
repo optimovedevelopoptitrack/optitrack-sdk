@@ -150,16 +150,25 @@ var OptimoveSDK = (function () {
 		var  logOptitrackCustomEvent = function (THIS, eventId, event_parameters) {
 			
 			try{
+
+				if(event_parameters == undefined)
+				{
+					return false;
+				}
 				let numOfAddedParams = 0;
-				let currEvent = _sdkConfig.events[eventId];
-				var parametersNames = Object.getOwnPropertyNames(currEvent.parameters);
-				parametersNames.forEach(function (param) {
+				let currEventConfig = _sdkConfig.events[eventId];
+				var parameterConfigsNames = Object.getOwnPropertyNames(currEventConfig.parameters);
+				parameterConfigsNames.forEach(function (paramName) {
 							
-					currParam = currEvent.parameters[param];
-					if(currParam.optiTrackDimensionId >0)
+					let currParamConfig = currEventConfig.parameters[paramName];
+					
+					if(currParamConfig.optiTrackDimensionId >0 && event_parameters[param] != null)
 					{
-						numOfAddedParams++;
-						_tracker.setCustomDimension(currParam.optiTrackDimensionId, event_parameters[param]);
+						if( event_parameters[param] != undefined)
+						{
+							numOfAddedParams++;
+							_tracker.setCustomDimension(currParamConfig.optiTrackDimensionId, event_parameters[param]);
+						}
 					}
 					
 				});
@@ -167,12 +176,13 @@ var OptimoveSDK = (function () {
 				if(numOfAddedParams > 0 && typeof _tracker != 'undefined')		
 				{
 					_tracker.trackEvent(LogEventCategory, eventId);
+					return true;
 				}else{
 					throw "_tracker is undefined !!";
 				}
 													
 			}catch(error){
-
+				throw "logOptitrackCustomEvent Failed!!";
 			}			
 			
 		};
