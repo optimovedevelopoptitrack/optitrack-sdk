@@ -58,7 +58,7 @@ var OptimoveSDK = (function () {
 			_ot_endpoint = getOptiTrackEndpointFromConfig(SDKConfig)
 			_ot_tenantId = getOptiTrackTenantIdFromConfig(SDKConfig);
 			_piwikURL = buildPiwikResourceURL(SDKConfig);
-			var tracker  = loadOptiTrackJSResource(this, _piwikURL, callback_ready);
+			let tracker  = loadOptiTrackJSResource(this, _piwikURL, callback_ready);
 			
 		};	
 
@@ -129,6 +129,10 @@ var OptimoveSDK = (function () {
 		// Function: logOptitrackCustomEvent 
 		// Args: category, action, name, value
 		// Sets the Event in Optitrack Infrastructure
+		// Flow: Go through the event configuration definition.
+		// Per each parameter we chech whether it exist and if so.
+		// What is the optiTrackDimensionId we should use for it in the custom Dimension.
+		// if the optiTrackDimensionId = -1 we define the parameter not to be delivered to the Optitrack.
 		// ---------------------------------------
 		var  logOptitrackCustomEvent = function (THIS, eventId, event_parameters) {
 			
@@ -140,17 +144,18 @@ var OptimoveSDK = (function () {
 				}
 				let numOfAddedParams = 0;
 				let currEventConfig = _sdkConfig.events[eventId];
-				var parameterConfigsNames = Object.getOwnPropertyNames(currEventConfig.parameters);
+				let parameterConfigsNames = Object.getOwnPropertyNames(currEventConfig.parameters);
 				parameterConfigsNames.forEach(function (paramName) {
 							
 					let currParamConfig = currEventConfig.parameters[paramName];
-					
-					if(currParamConfig.optiTrackDimensionId >0 && event_parameters[param] != null)
+					// Check if the parameter is given in the Event Argumen
+					if(event_parameters[paramName] != undefined && currParamConfig.optiTrackDimensionId > 0  )
 					{
-						if( event_parameters[param] != undefined)
+						let paramValue = event_parameters[paramName];
+						if( paramValue != undefined)
 						{
 							numOfAddedParams++;
-							_tracker.setCustomDimension(currParamConfig.optiTrackDimensionId, event_parameters[param]);
+							_tracker.setCustomDimension(currParamConfig.optiTrackDimensionId, paramValue);
 						}
 					}
 					
@@ -284,7 +289,7 @@ var OptimoveSDK = (function () {
 		var  getOptimoveStitchData = function(currURL)
 		{
 			// We might have not Load the Piwik Yet
-			var jsonData = {};
+			let jsonData = {};
 			jsonData["OptimoveStitchDataExist"] = false;
 			let optimovePublicCustomerId 	= "OptimovePublicCustomerId";
 			let optimoveVisitorId 			= "optimoveVisitorId";
@@ -363,7 +368,7 @@ var OptimoveSDK = (function () {
 		// ---------------------------------------
 		var setOptitrackUserId = function (THIS, updatedUserId) {
 			
-			var isValid = validateUserId(updatedUserId);
+			let isValid = validateUserId(updatedUserId);
 
 			try {
 				if (isValid == true && _userId == null) {
@@ -436,8 +441,8 @@ var OptimoveSDK = (function () {
 
 			let setOptimoveCookie = function(cookieMatcherUserId) { 
 			
-				var setCookieUrl = "https://gcm.optimove.events/setCookie?optimove_id="+cookieMatcherUserId; 
-				var setCookieNode = document.createElement("img"); 
+				let setCookieUrl = "https://gcm.optimove.events/setCookie?optimove_id="+cookieMatcherUserId; 
+				let setCookieNode = document.createElement("img"); 
 				setCookieNode.style.display = "none"; 
 				setCookieNode.setAttribute("src", setCookieUrl); 
 				document.body.appendChild(setCookieNode); 
@@ -446,8 +451,8 @@ var OptimoveSDK = (function () {
 
 			matchCookie = function(tenantId, optimoveCookieMatcherId) { 
 				//var url = "https://cm.g.doubleclick.net/pixel?google_nid=OptimoveCookieMatcherID&google_cm&tenant_id=TenantID"; 
-				var url = "https://cm.g.doubleclick.net/pixel?google_nid=" + optimoveCookieMatcherId + "&google_cm&tenant_id=" +tenantId; 
-				var node = document.createElement("img"); 
+				let url = "https://cm.g.doubleclick.net/pixel?google_nid=" + optimoveCookieMatcherId + "&google_cm&tenant_id=" +tenantId; 
+				let node = document.createElement("img"); 
 				node.style.display = "none"; 
 				node.setAttribute("src", url); 
 				document.body.appendChild(node); 
@@ -462,7 +467,7 @@ var OptimoveSDK = (function () {
 		// ---------------------------------------
 		var getOptitrackVisitorInfo = function (THIS) {
 			
-			var visitorInfo = [];
+			let visitorInfo = [];
 			try {
 
 				if (typeof _tracker != 'undefined') {
@@ -507,8 +512,8 @@ var OptimoveSDK = (function () {
 		// ---------------------------------------
 		var  validatePageURL = function (customURL) {
 			
-    		var re = /(https?|http?|ftp):\/\/[^\s\/$.?#].[^\s]*$/;
-    		return re.test(customURL);
+    		let regexp = /(https?|http?|ftp):\/\/[^\s\/$.?#].[^\s]*$/;
+    		return regexp.test(customURL);
 		};
 
 
@@ -518,8 +523,8 @@ var OptimoveSDK = (function () {
 		// validats  the email with regexpress
 		// ---------------------------------------
 		var  validateEmail = function (email) {
-    		var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    		return re.test(email);
+    		let regexp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    		return regexp.test(email);
 		};
 
 
@@ -532,9 +537,9 @@ var OptimoveSDK = (function () {
 
 			if(resourceURL != null)
 			{
-					var d = document;
-					var g = d.createElement('script');
-					var s = d.getElementsByTagName('script')[0];
+					let d = document;
+					let g = d.createElement('script');
+					let s = d.getElementsByTagName('script')[0];
 					g.type = 'text/javascript';
 					g.async = true; 
 					g.defer = true;
@@ -556,9 +561,9 @@ var OptimoveSDK = (function () {
 
 			if(resourceURL != null)
 			{
-					var d = document;
-					var g = d.createElement('script');
-					var s = d.getElementsByTagName('script')[0];
+					let d = document;
+					let g = d.createElement('script');
+					let s = d.getElementsByTagName('script')[0];
 					g.type = 'text/javascript';
 					g.async = true; 
 					g.defer = true;
@@ -600,7 +605,7 @@ var OptimoveSDK = (function () {
 		var createOptitrackTracker = function (){
 
 			if (typeof self.Piwik != 'undefined') {
-				var tracker = self.Piwik.getAsyncTracker( _ot_endpoint+ 'piwik.php', _ot_tenantId );
+				let tracker = self.Piwik.getAsyncTracker( _ot_endpoint+ 'piwik.php', _ot_tenantId );
 				return tracker;
 			}else {
 				return undefined;
