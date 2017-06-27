@@ -70,24 +70,7 @@ var OptimoveSDK = (function () {
 		this.getSDKVersion = function () {
 			return "Optimove SDK V1.0";
 		};		
-
-
-		// ---------------------------------------
-		// Function: setSDKUserOptions 
-		// Args: UserOptions
-		// Gets the Optimove SDK Verion
-		// ---------------------------------------
-		this.setSDKUserOptions = function (userOptions) {
-			
-			var propNames = Object.getOwnPropertyNames(userOptions);
-            var THIS = this;
-			propNames.forEach(function (optionPropName) {
-				handleUserOption(THIS, optionPropName, userOptions);
-			});
-
-		};
-
-		
+	
 
 		// ---------------------------------------
 		// Function: setUserId 
