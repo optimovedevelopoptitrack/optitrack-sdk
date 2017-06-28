@@ -22,10 +22,14 @@ var OptimoveSDK = (function () {
 
 // ------------------------------ Event Const Values ------------------------------
 
-		var LogEventCategory = 'LogEvent';
-		var SetUserIdEvent = 'SetUserIdEvent';
-		var SetEmailEvent = 'SetEmailEvent';
-		var StitchUsersEvent = 'StitchUsersEvent';
+		var LogEventCategory_name = 'LogEvent';
+		var SetUserIdEvent_name = 'set_user_id_event';
+		var SetEmailEvent_name = 'Set_email_event';
+		var StitchUsersEvent_name = 'stitch_event';
+		var email_param_name = "email";
+		var originalVisitorId_param_name = "originalVisitorId";
+		var userId_param_name = "userId";
+		var updatedVisitorId_param_name = "updatedVisitorId"
 // ------------------------------ SDK public member functions ------------------------------
 
 		// ---------------------------------------
@@ -163,7 +167,7 @@ var OptimoveSDK = (function () {
 
 				if(numOfAddedParams > 0 && typeof _tracker != 'undefined')		
 				{
-					_tracker.trackEvent(LogEventCategory, eventId);
+					_tracker.trackEvent(LogEventCategory_name, eventId);
 					return true;
 				}else{
 					throw "_tracker is undefined !!";
@@ -240,6 +244,18 @@ var OptimoveSDK = (function () {
 				let targetVsitorId = "targetVsitorId";
 
 				let stitchData = {}
+
+				let eventConfig = getCustomEventConfigById(StitchUsersEvent_name);
+				let sourcePCIDParamConfig = null;
+				let sourceVisitorIdParamConfig = null;
+				let targetVsitorIdIdParamConfig = null;
+				if(eventConfig != null)
+				{	
+					sourcePCIDParamConfig = getCustomEventParamFromConfig(eventConfig, sourcePublicCustomerId);
+					sourceVisitorIdParamConfig = getCustomEventParamFromConfig(eventConfig, sourceVisitorId);
+					targetVsitorIdIdParamConfig = getCustomEventParamFromConfig(eventConfig, targetVsitorId);
+				}
+
 				let pageStitchData = getOptimoveStitchData(pageURL);
 				if(pageStitchData.OptimoveStitchDataExist == false)
 				{
@@ -258,17 +274,30 @@ var OptimoveSDK = (function () {
 				
 				if (stitchData == true && typeof _tracker != 'undefined') 
 				{
-					let visitorId = _tracker.getVisitorId();
+					let numOfParams = 0;
+					let targetVisitorId = _tracker.getVisitorId();
 					if(stitchData.OptimovePublicCustomerId != null)
 					{
-						//Stitch a Customer
-						_tracker.setCustomDimension(_sdkConfig.events[stitchEvent].parameters[sourcePublicCustomerId].optiTrackDimensionId, stitchData.OptimovePublicCustomerId);
+						
+						if(sourcePCIDParamConfig.optiTrackDimensionId > 0){
+							numOfParams++;
+							_tracker.setCustomDimension(sourcePCIDParamConfig.optiTrackDimensionId, stitchData.OptimovePublicCustomerId);
+						}						
+						
 					}else{
-						_tracker.setCustomDimension(_sdkConfig.events[stitchEvent].parameters[sourceVisitorId].optiTrackDimensionId, stitchData.optimoveVisitorId);
+
+						if(sourceVisitorIdParamConfig.optiTrackDimensionId > 0){
+							numOfParams++;
+							_tracker.setCustomDimension(sourceVisitorIdParamConfig.optiTrackDimensionId, stitchData.OptimovePublicCustomerId);
+						}
+						
 					}
-					
-					_tracker.setCustomDimension(_sdkConfig.events[stitchEvent].parameters[targetVsitorId], visitorId);
-					_tracker.trackEvent(LogEventCategory, StitchUsersEvent)
+					if(targetVsitorIdIdParamConfig.optiTrackDimensionId > 0){
+						numOfParams++;
+						_tracker.setCustomDimension(targetVsitorIdIdParamConfig.optiTrackDimensionId, stitchData.OptimovePublicCustomerId);
+					}
+				
+					_tracker.trackEvent(LogEventCategory_name, StitchUsersEvent_name)
 				}
 				
 
@@ -342,7 +371,7 @@ var OptimoveSDK = (function () {
 		// Args: email - the User email
 		// Sets the email in Optitrack Infrastructure
 		// ---------------------------------------
-		var logOptitrackUserEmail = function (THIS, email) {
+		var logOptitrackUserEmail = function (THIS, emailValue) {
 					
 			try {
 				let isValidEmail = validateEmail(email);
@@ -350,8 +379,13 @@ var OptimoveSDK = (function () {
 					
 					throw 'email ' + email + ' is not valid';
 				}
-				_tracker.setCustomDimension(CustomDimensionsMapping.email, email);
-				_tracker.trackEvent(LogEventCategory, SetEmailEvent);
+				let eventConfig = getCustomEventConfigById(SetEmailEvent_name);
+				if(eventConfig != null)
+				{	
+					let emailConfig = getCustomEventParamFromConfig(eventConfig, email_param_name);
+					_tracker.setCustomDimension(emailConfig.optiTrackDimensionId, emailValue);
+					_tracker.trackEvent(LogEventCategory_name, SetEmailEvent_name);
+				}
 
 			} catch (err) {
 				
@@ -378,12 +412,12 @@ var OptimoveSDK = (function () {
 						var existUserId = _tracker.getUserId();
 						if(existUserId != updatedUserId)
 						{
-							var origVisitorId = _tracker.getVisitorId();
-							
-							_tracker.setCustomDimension(CustomDimensionsMapping.originalVisitorId, origVisitorId);
+							let origVisitorId = _tracker.getVisitorId();							
 							_tracker.setUserId(updatedUserId);
-							logSetUserIdEvent(THIS, origVisitorId, updatedUserId);
 							_userId = updatedUserId;
+							let updatedVisitorId = _tracker.getVisitorId();
+							logSetUserIdEvent(THIS, origVisitorId, updatedUserId, updatedVisitorId);
+							
 							if(_sdkConfig.otSupportCookieMatcher == true)
 							{
 								updateCookieMatcher(THIS, updatedUserId);
@@ -406,12 +440,34 @@ var OptimoveSDK = (function () {
 		// Args: THIS, origVisitorId, updatedUserId
 		// Sets the in Optitrack Infrastructure User ID
 		// ---------------------------------------
-		var logSetUserIdEvent = function (THIS, origVisitorId, updatedUserId) {
+		var logSetUserIdEvent = function (THIS, origVisitorIdValue, updatedUserIdValue, updatedVisitorIdValue) {
 			
 			try {
-				_tracker.setCustomDimension(CustomDimensionsMapping.convertedVisitorId, origVisitorId);
-				_tracker.setCustomDimension(CustomDimensionsMapping.userId, updatedUserId);
-				_tracker.trackEvent(LogEventCategory, SetUserIdEvent);
+				let eventConfig = getCustomEventConfigById(SetUserIdEvent_name);
+				if(eventConfig != null)
+				{
+					
+					let originalVisitorIdConfig = getCustomEventParamFromConfig(eventConfig, originalVisitorId_param_name);
+					let updatedVisitorIdConfig = getCustomEventParamFromConfig(eventConfig, updatedVisitorId_param_name);
+					let userIdParamConfig = getCustomEventParamFromConfig(eventConfig, userId_param_name);
+
+					if(userIdParamConfig != undefined)
+					{
+						_tracker.setCustomDimension(userIdParamConfig.optiTrackDimensionId, updatedUserIdValue);
+					}
+					if(originalVisitorIdConfig != undefined)
+					{
+						_tracker.setCustomDimension(originalVisitorIdConfig.optiTrackDimensionId, origVisitorIdValue);
+					}
+					if(updatedVisitorIdConfig != undefined)
+					{
+						_tracker.setCustomDimension(updatedVisitorIdConfig.optiTrackDimensionId, updatedVisitorIdValue);
+					}
+					
+					
+					_tracker.trackEvent(LogEventCategory_name, SetUserIdEvent_name);
+				}
+				
 			} catch (err) {
 				
 			}
@@ -483,6 +539,36 @@ var OptimoveSDK = (function () {
 		};
 
 		// ------------------------------ Optitrack Private Utility member functions ------------------------------ 
+
+
+		
+		// ---------------------------------------
+		// Function: getCustomEventConfigById 
+		// Args: eventId
+		// returns the event Configuration.		
+		// ---------------------------------------
+		var getCustomEventConfigById = function(eventId){
+			let currEvent = _sdkConfig.events[eventId];
+			if(currEvent == undefined)
+			{
+				return null;
+			}
+			return currEvent;
+		};
+
+		// ---------------------------------------
+		// Function: getCustomEventParamFromConfig 
+		// Args: eventConfig, paramName
+		// returns the event Configuration.
+		// ---------------------------------------
+		var getCustomEventParamFromConfig = function(eventConfig, paramName){			
+			let currParam = eventConfig.parameters[paramName];
+			if(currParam == undefined)
+			{
+				return null;
+			}
+			return currParam;
+		};
 
 
 		// ---------------------------------------

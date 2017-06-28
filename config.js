@@ -135,7 +135,7 @@ var sdkConfig={
       }
     },
 	
-	"stitchEvent": {
+	"stitch_event": {
       "supportedOnOptitrack": "true",
       "supportedOnRealTime": "true",
       "parameters": {
@@ -161,6 +161,48 @@ var sdkConfig={
           "optiTrackDimensionId": "8"
         }
       }
-    }
+    },
+
+	"set_user_id_event": {
+      "supportedOnOptitrack": "true",
+      "supportedOnRealTime": "true",
+      "parameters": {
+        "originalVisitorId": {
+          "optional": "false",
+          "name": "originalVisitorId",
+          "id": "1",
+          "type": "String",
+          "optiTrackDimensionId": "6"
+        },
+        "userId": {
+          "optional": "true",
+          "name": "userId",
+          "id": "2",
+          "type": "String",
+          "optiTrackDimensionId": "7"
+        },
+        "updatedVisitorId": {
+          "optional": "false",
+          "name": "updatedVisitorId",
+          "id": "3",
+          "type": "String",
+          "optiTrackDimensionId": "8"
+        }
+      }
+    },
+
+	"Set_email_event": {
+      "supportedOnOptitrack": "true",
+      "supportedOnRealTime": "true",
+      "parameters": {
+        "email": {
+          "optional": "false",
+          "name": "email",
+          "id": "1",
+          "type": "String",
+          "optiTrackDimensionId": "6"
+        }
+      }
+    },
   }
 }
