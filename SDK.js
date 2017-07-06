@@ -830,7 +830,7 @@ var optimoveSDK = function(){
             if(validEvent){
                 if(_configuration.enableOptitrack){
                     logger.log("info","in reportEvent Optitrack");
-                    logEvent(eventName, parameters);
+                    optitrackModule.logEvent(eventName, parameters);
                     // call optitrack
                 }
 
