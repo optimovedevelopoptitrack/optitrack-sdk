@@ -1,1 +1,54 @@
 
+var optimoveTenantConfiguration={
+    realtimeToken: "dfasdf4fwf234rfwef2rf2w3efd234df2freff23dff3",
+    realtimeGateway: "https://102.22.33.44/",
+    optitrackEndpoint: "http://35.184.87.239/",
+    siteId: 801,
+    enableOptitrack: true,
+    enableVisitors : true,
+    enableRealtime: true,
+    enableHeartBeatTimer: false,
+    supportCookieMatcher: false,
+    optimoveCookieMatcherId: undefined,
+    supportUserEmailStitch: true,
+    MinimumEmailAddressLength: 3,
+    heartBeatTimer: 0,
+    cookieMatcherId: null,
+    optitTrackerName: "optitTrackerv3.03.js",
+    options: {
+        showDimmer : true,
+        showWatermark : true,
+        popupCallback: null
+    },
+    events: {
+        addToCart: {
+            id : 7,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                productName: {
+                    required: true,
+                    name: "action_name",
+                    id: 2,
+                    type: "String",
+                    optiTrackDimensionId: 1
+                },
+                productId: {
+                    required: false,
+                    name: "action_value",
+                    id: 4,
+                    type: "Number",
+                    optiTrackDimensionId: 2
+                },
+                price: {
+                    required: true,
+                    name: "action_price",
+                    id: 5,
+                    type: "Number",
+                    optiTrackDimensionId: 3
+                }
+            }
+        }
+    }
+}
+
