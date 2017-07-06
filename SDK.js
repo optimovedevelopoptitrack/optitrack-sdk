@@ -2,7 +2,7 @@
 
 var optimoveSDK = function(){
     var _version = "2.0.0";
-    var _sdkDomain = "";
+    var _sdkDomain = "https://optimovesdk.firebaseapp.com";
     var _configuration;
 
     var logger = function(){
