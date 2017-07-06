@@ -344,19 +344,19 @@ var optimoveSDK = function(){
                     throw 'customURL-' + pageURL  + 'is not a valid URL';
                 }
                 _tracker.enableLinkTracking(true);
-                if(_sdkConfig.otEnableHeartBeatTimer > 0)
+                if(_sdkConfig.enableHeartBeatTimer > 0)
                 {
-                    _tracker.enableHeartBeatTimer(_sdkConfig.otEnableHeartBeatTimer);
+                    _tracker.enableHeartBeatTimer(_sdkConfig.enableHeartBeatTimer);
                 }
 
                 _tracker.setCustomUrl(pageURL);
                 _tracker.trackPageView(pageTitle);
-                if(_sdkConfig.otSupportCookieMatcher == true)
+                if(_sdkConfig.supportCookieMatcher == true)
                 {
                     updateCookieMatcher(THIS, updatedUserId);
                 }
 
-                if(_sdkConfig.otsupportUserEmailStitch == true)
+                if(_sdkConfig.supportUserEmailStitch == true)
                 {
                     processEmailStitch(THIS, customURL);
                 }
@@ -534,7 +534,7 @@ var optimoveSDK = function(){
                             _userId = updatedUserId;
                             var updatedVisitorId = _tracker.getVisitorId();
                             logSetUserIdEvent(THIS, origVisitorId, updatedUserId, updatedVisitorId);
-                            if(_sdkConfig.otSupportCookieMatcher == true)
+                            if(_sdkConfig.supportCookieMatcher == true)
                             {
                                 updateCookieMatcher(THIS, updatedUserId);
                             }
