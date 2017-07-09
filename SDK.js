@@ -222,6 +222,7 @@ var optimoveSDK = function(){
         var _configURL  	= null;
         var _tracker 		= null;
         var _sdkConfig 		= null;
+        var _pageVisitCount = 0;
         // ------------------------------ Event Const Values ------------------------------
         var LogEventCategory_name = 'LogEvent';
         var SetUserIdEvent_name = 'set_user_id_event';
@@ -245,7 +246,7 @@ var optimoveSDK = function(){
             _ot_tenantId = getOptiTrackTenantIdFromConfig(SDKConfig);
             _piwikURL = buildPiwikResourceURL(SDKConfig);
             var tracker  = loadOptiTrackJSResource(this, _piwikURL, callback_ready);
-
+          
         };
 
         // ---------------------------------------
@@ -286,6 +287,7 @@ var optimoveSDK = function(){
 
         // ------------------------------ Optitrack Private member functions ------------------------------
 
+        
         // ---------------------------------------
         // Function: logOptitrackCustomEvent
         // Args: category, action, name, value
@@ -301,6 +303,8 @@ var optimoveSDK = function(){
                 {
                     return false;
                 }
+
+                cleanCustomDimensions(); // cleaning the previous usage
                 var numOfAddedParams = 0;
                 var currEventConfig = _sdkConfig.events[eventId];
                 var parameterConfigsNames = Object.getOwnPropertyNames(currEventConfig.parameters);
@@ -339,6 +343,16 @@ var optimoveSDK = function(){
         var logOptitrackPageVisit = function (THIS, pageURL, pageTitle) {
             try{
                 var isValidURL = validatePageURL(pageURL);
+
+                if(_sdkConfig.isSPASite == true)
+                {
+                    _pageVisitCount++;
+                    if(_pageVisitCount > 1)
+                    {
+                        _tracker.setGenerationTimeMs(0);
+                    }
+                }
+
                 if(isValidURL == false)
                 {
                     throw 'customURL-' + pageURL  + 'is not a valid URL';
@@ -411,6 +425,7 @@ var optimoveSDK = function(){
 
                 if (stitchData == true && typeof _tracker != 'undefined')
                 {
+                    cleanCustomDimensions(); // cleaning the previous usage
                     var numOfParams = 0;
                     var targetVisitorId = _tracker.getVisitorId();
                     if(stitchData.OptimovePublicCustomerId != null)
@@ -506,6 +521,7 @@ var optimoveSDK = function(){
                 var eventConfig = getCustomEventConfigById(SetEmailEvent_name);
                 if(eventConfig != null)
                 {
+                    cleanCustomDimensions(); // cleaning the previous usage
                     var emailConfig = getCustomEventParamFromConfig(eventConfig, email_param_name);
                     _tracker.setCustomDimension(emailConfig.optiTrackDimensionId, emailValue);
                     _tracker.trackEvent(LogEventCategory_name, SetEmailEvent_name);
@@ -556,6 +572,7 @@ var optimoveSDK = function(){
                 var eventConfig = getCustomEventConfigById(SetUserIdEvent_name);
                 if(eventConfig != null)
                 {
+                    cleanCustomDimensions(); // cleaning the previous usage
                     var originalVisitorIdConfig = getCustomEventParamFromConfig(eventConfig, originalVisitorId_param_name);
                     var updatedVisitorIdConfig = getCustomEventParamFromConfig(eventConfig, updatedVisitorId_param_name);
                     var userIdParamConfig = getCustomEventParamFromConfig(eventConfig, userId_param_name);
@@ -811,13 +828,29 @@ var optimoveSDK = function(){
             return SDKConfig.optitrackEndpoint + 'piwik.js';
         };
 
+        // ---------------------------------------
+        // Function: cleanCustomDimensions
+        // Args: none
+        // clean the custom Dimensions from previous usage.
+        // ---------------------------------------
+        var cleanCustomDimensions= function (){
+            var customDimensionId = _sdkConfig.actionCustomDimensionsStartId
+            var maxActionCustomDimensionsId = _sdkConfig.actionCustomDimensionsStartId + _sdkConfig.maxActionCustomDimensions;
+            for( customDimensionId = _sdkConfig.actionCustomDimensionsStartId; customDimensionId <= maxActionCustomDimensionsId  ; customDimensionId++){
+                _tracker.deleteCustomDimension (customDimensionId);
+            };
+            
+        }
+
         return {
             initializeOptiTrack : initializeOptiTrack,
             logPageVisitEvent : logPageVisitEvent,
             setUserId : setUserId,
             logUserEmail: logUserEmail,
             logEvent : logEvent
-        }
+        };
+
+        
     }();
 
     var _API = {
