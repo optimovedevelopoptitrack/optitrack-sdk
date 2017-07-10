@@ -306,10 +306,10 @@ var optimoveSDK = function(){
 
                 cleanCustomDimensions(); // cleaning the previous usage
                 var numOfAddedParams = 0;
-                var currEventConfig = _sdkConfig.events[eventId];
-                var parameterConfigsNames = Object.getOwnPropertyNames(currEventConfig.parameters);
+                var eventConfig = _sdkConfig.events[eventId];
+                var parameterConfigsNames = Object.getOwnPropertyNames(eventConfig.parameters);
                 parameterConfigsNames.forEach(function (paramName) {
-                    var currParamConfig = currEventConfig.parameters[paramName];
+                    var currParamConfig = eventConfig.parameters[paramName];
                     // Check if the parameter is given in the Event Argumen
                     if(event_parameters[paramName] != undefined && currParamConfig.optiTrackDimensionId > 0  )
                     {
@@ -324,6 +324,12 @@ var optimoveSDK = function(){
 
                 if(numOfAddedParams > 0 && typeof _tracker != 'undefined')
                 {
+
+                    var configEventId = eventConfig.id;
+                    var eventName = eventId;                                     
+                    _tracker.setCustomDimension(_sdkConfig.eventIdCustomDimensionId, configEventId);
+                    _tracker.setCustomDimension(_sdkConfig.eventNameCustomDimensionId, eventName);
+                    
                     _tracker.trackEvent(LogEventCategory_name, eventId);
                     return true;
                 }else{
@@ -445,6 +451,11 @@ var optimoveSDK = function(){
                         numOfParams++;
                         _tracker.setCustomDimension(targetVsitorIdIdParamConfig.optiTrackDimensionId, stitchData.OptimovePublicCustomerId);
                     }
+                    
+                    var configEventId = eventConfig.id;
+                    var eventName = StitchUsersEvent_name;                                     
+                    _tracker.setCustomDimension(_sdkConfig.eventIdCustomDimensionId, configEventId);
+                    _tracker.setCustomDimension(_sdkConfig.eventNameCustomDimensionId, eventName);
 
                     _tracker.trackEvent(LogEventCategory_name, StitchUsersEvent_name)
                 }
@@ -524,6 +535,10 @@ var optimoveSDK = function(){
                     cleanCustomDimensions(); // cleaning the previous usage
                     var emailConfig = getCustomEventParamFromConfig(eventConfig, email_param_name);
                     _tracker.setCustomDimension(emailConfig.optiTrackDimensionId, emailValue);
+                    var configEventId = eventConfig.id;
+                    var eventName = SetEmailEvent_name;                                     
+                    _tracker.setCustomDimension(_sdkConfig.eventIdCustomDimensionId, configEventId);
+                    _tracker.setCustomDimension(_sdkConfig.eventNameCustomDimensionId, eventName);
                     _tracker.trackEvent(LogEventCategory_name, SetEmailEvent_name);
                 }
             } catch (err) {
@@ -576,6 +591,13 @@ var optimoveSDK = function(){
                     var originalVisitorIdConfig = getCustomEventParamFromConfig(eventConfig, originalVisitorId_param_name);
                     var updatedVisitorIdConfig = getCustomEventParamFromConfig(eventConfig, updatedVisitorId_param_name);
                     var userIdParamConfig = getCustomEventParamFromConfig(eventConfig, userId_param_name);
+
+                    var eventId = eventConfig.id;
+                    var eventName = SetUserIdEvent_name;                                     
+                    _tracker.setCustomDimension(_sdkConfig.eventIdCustomDimensionId, eventId);
+                    _tracker.setCustomDimension(_sdkConfig.eventNameCustomDimensionId, eventName);
+
+
                     if(userIdParamConfig != undefined)
                     {
                         _tracker.setCustomDimension(userIdParamConfig.optiTrackDimensionId, updatedUserIdValue);
