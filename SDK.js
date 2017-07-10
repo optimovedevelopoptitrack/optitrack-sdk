@@ -877,14 +877,26 @@ var optimoveSDK = function(){
                 }
             }
         },
-        setUserId : function(){
-
+        setUserId : function(updatedUserId){
+            if(_configuration.enableOptitrack){
+                logger.log("info","call setUserId Optitrack");
+                 optitrackModule.setUserId(updatedUserId);
+            }
+           
         },
-        setUserEmail : function(){
-
+        setUserEmail : function(email){
+            if(_configuration.enableOptitrack){
+                logger.log("info","call setUserEmail Optitrack");
+                optitrackModule.logUserEmail();
+            }
+        
         },
-        setPageVisit : function(){
-
+        setPageVisit : function(customURL, pageTitle){
+            if(_configuration.enableOptitrack){
+                logger.log("info","call setPageVisit Optitrack");
+                optitrackModule.logPageVisitEvent(customURL, pageTitle);
+            }
+            
         }
     }
 
