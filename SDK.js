@@ -871,8 +871,10 @@ var optimoveSDK = function(){
             logPageVisitEvent : logPageVisitEvent,
             setUserId : setUserId,
             logUserEmail: logUserEmail,
-            logEvent : logEvent
+            logEvent : logEvent,
+            getOptitrackVisitorInfo: getOptitrackVisitorInfo
         };
+
 
         
     }();
@@ -881,7 +883,7 @@ var optimoveSDK = function(){
         var visitorsInfo = optitrackModule.getOptitrackVisitorInfo();
         return {
             visitorId : visitorsInfo[1],
-            visitCount : visitorsInfo[4]
+            visitCount : visitorsInfo[3]
         }
     }
     var _API = {
@@ -941,7 +943,6 @@ var optimoveSDK = function(){
     }
 
 }();
-
 
 
 
