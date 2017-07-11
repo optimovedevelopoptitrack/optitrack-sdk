@@ -1,7 +1,7 @@
 'use strict'
 
 var optimoveSDK = function(){
-    var _version = "2.0.0";
+    var _version = "1.0.0";
     var _sdkDomain = "https://optimove-web-sdk.firebaseapp.com/";
     var _configuration;
     var _userId;
