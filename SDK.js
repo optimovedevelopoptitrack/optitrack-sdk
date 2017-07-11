@@ -2,7 +2,7 @@
 
 var optimoveSDK = function(){
     var _version = "2.0.0";
-    var _sdkDomain = "https://optimovesdk.firebaseapp.com";
+    var _sdkDomain = "https://optimove-web-sdk.firebaseapp.com/";
     var _configuration;
     var _userId;
     var _userEmail;
@@ -27,12 +27,12 @@ var optimoveSDK = function(){
         }
     }()
 
-    var init = function(token, callback, logLevel){
+    var init = function(token, confversion, callback, logLevel){
         if(logLevel){
             logger.setLevel(logLevel);
         }
         //load script
-        var configurationURL = _sdkDomain + token + ".js";
+        var configurationURL = _sdkDomain + token + "/" + confversion+".js";
         loadScript(configurationURL, function () {
             logger.log("info", "configuration loaded successfully");
             setConfiguration(callback);
