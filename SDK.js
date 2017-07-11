@@ -4,6 +4,8 @@ var optimoveSDK = function(){
     var _version = "2.0.0";
     var _sdkDomain = "https://optimovesdk.firebaseapp.com";
     var _configuration;
+    var _userId;
+    var _userEmail;
 
     var logger = function(){
         var _levels = {"info" : 1, "error" : 2, "none" : 3}
@@ -198,8 +200,8 @@ var optimoveSDK = function(){
             jsonpAsyncCall("reportEvent_b", { tid : _configuration.realtimeToken,
                     cid : event.userId,
                     eid : event.id,
-                    vid : event.visitorId,
-                    vcount : event.visitCount,
+                    vid : event.visitorData ? event.visitorData.visitorId : null,
+                    vcount : event.visitorData ? event.visitorData.visitCount : null,
                     context : JSON.stringify(params)
                 },
                 function (response) {
@@ -875,24 +877,33 @@ var optimoveSDK = function(){
         
     }();
 
+    var getVisitorsObj = function(){
+        var visitorsInfo = optitrackModule.getOptitrackVisitorInfo();
+        return {
+            visitorId : visitorsInfo[1],
+            visitCount : visitorsInfo[4]
+        }
+    }
     var _API = {
         getVersion : function(){
             return _version;
         },
-
+        getConfigurationVersion : function(){
+            return _configuration.version;
+        },
         reportEvent : function(eventName, parameters){
             var validEvent = validateEvent(eventName, parameters);
+            validEvent.userId = _userId;
             if(validEvent){
                 if(_configuration.enableOptitrack){
                     logger.log("info","in reportEvent Optitrack");
                     optitrackModule.logEvent(eventName, parameters);
-                    // call optitrack
                 }
 
                 if(_configuration.enableRealtime){
                     logger.log("info","in reportEvent Real time");
                     if(_configuration.enableOptitrack){
-                        // get visitor id and session number
+                        validEvent.visitorData = getVisitorsObj();
                     }
 
                     realTimeModule.reportEvent(validEvent);
@@ -900,6 +911,7 @@ var optimoveSDK = function(){
             }
         },
         setUserId : function(updatedUserId){
+            _userId = updatedUserId;
             if(_configuration.enableOptitrack){
                 logger.log("info","call setUserId Optitrack");
                  optitrackModule.setUserId(updatedUserId);
@@ -907,18 +919,18 @@ var optimoveSDK = function(){
            
         },
         setUserEmail : function(email){
+            _userEmail = email;
             if(_configuration.enableOptitrack){
                 logger.log("info","call setUserEmail Optitrack");
                 optitrackModule.logUserEmail();
             }
-        
         },
         setPageVisit : function(customURL, pageTitle){
             if(_configuration.enableOptitrack){
                 logger.log("info","call setPageVisit Optitrack");
                 optitrackModule.logPageVisitEvent(customURL, pageTitle);
             }
-            
+
         }
     }
 
