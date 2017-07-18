@@ -376,7 +376,7 @@ var optimoveSDK = function(){
 
                 _tracker.setCustomUrl(pageURL);
 
-                if(typeof pageTitle != 'undefined')
+                if(typeof pageTitle != 'undefined' && pageTitle != null)
                 {
                     _tracker.trackPageView(pageTitle);
                 }else{
