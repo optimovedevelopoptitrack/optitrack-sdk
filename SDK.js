@@ -330,8 +330,8 @@ var optimoveSDK = function(){
 
                     var configEventId = eventConfig.id;
                     var eventName = eventId;                                     
-                    _tracker.setCustomDimension(_sdkConfig.eventIdCustomDimensionId, configEventId);
-                    _tracker.setCustomDimension(_sdkConfig.eventNameCustomDimensionId, eventName);
+                    _tracker.setCustomDimension(_sdkConfig.optitrackMetaData.eventIdCustomDimensionId, configEventId);
+                    _tracker.setCustomDimension(_sdkConfig.optitrackMetaData.eventNameCustomDimensionId, eventName);
                     
                     _tracker.trackEvent(LogEventCategory_name, eventId);
                     return true;
@@ -369,9 +369,9 @@ var optimoveSDK = function(){
                 // enable link tracking
                 _tracker.enableLinkTracking(true);
 
-                if(_sdkConfig.enableHeartBeatTimer == true )
+                if(_sdkConfig.optitrackMetaData.enableHeartBeatTimer == true )
                 {
-                    _tracker.enableHeartBeatTimer(_sdkConfig.heartBeatTimer);
+                    _tracker.enableHeartBeatTimer(_sdkConfig.optitrackMetaData.heartBeatTimer);
                 }
 
                 _tracker.setCustomUrl(pageURL);
@@ -472,8 +472,8 @@ var optimoveSDK = function(){
                     
                     var configEventId = eventConfig.id;
                     var eventName = StitchUsersEvent_name;                                     
-                    _tracker.setCustomDimension(_sdkConfig.eventIdCustomDimensionId, configEventId);
-                    _tracker.setCustomDimension(_sdkConfig.eventNameCustomDimensionId, eventName);
+                    _tracker.setCustomDimension(_sdkConfig.optitrackMetaData.eventIdCustomDimensionId, configEventId);
+                    _tracker.setCustomDimension(_sdkConfig.optitrackMetaData.eventNameCustomDimensionId, eventName);
 
                     _tracker.trackEvent(LogEventCategory_name, StitchUsersEvent_name)
                 }
@@ -613,8 +613,8 @@ var optimoveSDK = function(){
 
                     var eventId = eventConfig.id;
                     var eventName = SetUserIdEvent_name;                                     
-                    _tracker.setCustomDimension(_sdkConfig.eventIdCustomDimensionId, eventId);
-                    _tracker.setCustomDimension(_sdkConfig.eventNameCustomDimensionId, eventName);
+                    _tracker.setCustomDimension(_sdkConfig.optitrackMetaData.eventIdCustomDimensionId, eventId);
+                    _tracker.setCustomDimension(_sdkConfig.optitrackMetaData.eventNameCustomDimensionId, eventName);
 
 
                     if(userIdParamConfig != undefined)
@@ -656,7 +656,8 @@ var optimoveSDK = function(){
             }
 
             setOptimoveCookie(cookieMatcherUserId);
-            matchCookie(_sdkConfig.siteId, _sdkConfig.optimoveCookieMatcherId);
+            var siteId = getOptiTrackTenantIdFromConfig(_sdkConfig);
+            matchCookie(siteId, _sdkConfig.optimoveCookieMatcherId);
             var setOptimoveCookie = function(cookieMatcherUserId) {
                 var setCookieUrl = "https://gcm.optimove.events/setCookie?optimove_id="+cookieMatcherUserId;
                 var setCookieNode = document.createElement("img");
@@ -848,7 +849,7 @@ var optimoveSDK = function(){
         // Get the Tracker Endpoint from the Config
         // ---------------------------------------
         var getOptiTrackEndpointFromConfig = function (SDKConfig){
-            return  SDKConfig.optitrackEndpoint;
+            return  SDKConfig.optitrackMetaData.optitrackEndpoint;
         };
 
         // ---------------------------------------
@@ -858,7 +859,7 @@ var optimoveSDK = function(){
         // ---------------------------------------
         var getOptiTrackTenantIdFromConfig = function (SDKConfig){
 
-            return   SDKConfig.siteId;
+            return   SDKConfig.optitrackMetaData.siteId;
         };
 
         // ---------------------------------------
@@ -867,7 +868,8 @@ var optimoveSDK = function(){
         // build Tracker endpoint URL.
         // ---------------------------------------
         var buildPiwikResourceURL = function (SDKConfig){
-            return SDKConfig.optitrackEndpoint + 'piwik.js';
+            var piwikURL = getOptiTrackEndpointFromConfig(SDKConfig) + 'piwik.js';
+            return piwikURL;
         };
 
         // ---------------------------------------
@@ -876,9 +878,9 @@ var optimoveSDK = function(){
         // clean the custom Dimensions from previous usage.
         // ---------------------------------------
         var cleanCustomDimensions= function (){
-            var customDimensionId = _sdkConfig.actionCustomDimensionsStartId
-            var maxActionCustomDimensionsId = _sdkConfig.actionCustomDimensionsStartId + _sdkConfig.maxActionCustomDimensions;
-            for( customDimensionId = _sdkConfig.actionCustomDimensionsStartId; customDimensionId <= maxActionCustomDimensionsId  ; customDimensionId++){
+            var customDimensionId = _sdkConfig.optitrackMetaData.actionCustomDimensionsStartId
+            var maxActionCustomDimensionsId = _sdkConfig.optitrackMetaData.actionCustomDimensionsStartId + _sdkConfig.optitrackMetaData.maxActionCustomDimensions;
+            for( customDimensionId = _sdkConfig.optitrackMetaData.actionCustomDimensionsStartId; customDimensionId <= maxActionCustomDimensionsId  ; customDimensionId++){
                 _tracker.deleteCustomDimension (customDimensionId);
             };
             
