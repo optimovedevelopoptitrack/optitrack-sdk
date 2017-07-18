@@ -1,26 +1,23 @@
 var optimoveTenantConfiguration = {
-    version: "1.0.0.0",
-    
-    isSPA: false,
-    siteId: 801,
-    supportCookieMatcher: false,
-    enableOptitrack: true,
-    enableVisitors: true,
-    enableRealtime: true,
+    version: "1.0.0",
     realtimeToken: "dfasdf4fwf234rfwef2rf2w3efd234df2freff23dff3",
     realtimeGateway: "https://102.22.33.44/",
     optitrackEndpoint: "http://35.184.87.239/",
-    optimoveCookieMatcherId: undefined,
-    supportUserEmailStitch: true,
-    
     eventIdCustomDimensionId: 6,
     eventNameCustomDimensionId: 7,
+    isSPA: false,
     visitCustomDimensionsStartId: 1,
     maxVisitCustomDimensions: 5,
     actionCustomDimensionsStartId: 8,
-    maxActionCustomDimensions: 25,   
+    maxActionCustomDimensions: 25,
+    siteId: 801,
+    enableOptitrack: true,
+    enableVisitors: true,
+    enableRealtime: true,
     enableHeartBeatTimer: true,
-      
+    supportCookieMatcher: false,
+    optimoveCookieMatcherId: undefined,
+    supportUserEmailStitch: true,
     MinimumEmailAddressLength: 3,
     heartBeatTimer: 30,
     cookieMatcherId: null,
@@ -60,7 +57,7 @@ var optimoveTenantConfiguration = {
             }
         },
         Event1: {
-            id: 10,
+            id: 1101,
             supportedOnOptitrack: true,
             supportedOnRealTime: true,
             parameters: {
@@ -89,7 +86,7 @@ var optimoveTenantConfiguration = {
         },
 
         Event2: {
-            id: 9,
+            id:1102,
             supportedOnOptitrack: true,
             supportedOnRealTime: true,
 
@@ -119,7 +116,7 @@ var optimoveTenantConfiguration = {
         },
 
         Event3: {
-            id: 10,
+            id: 1103,
             supportedOnOptitrack: true,
             supportedOnRealTime: true,
 
@@ -150,7 +147,7 @@ var optimoveTenantConfiguration = {
 
         Event4: {
 
-            id: 11,
+            id: 1104,
             supportedOnOptitrack: true,
             supportedOnRealTime: true,
             parameters: {
@@ -178,36 +175,9 @@ var optimoveTenantConfiguration = {
             }
         },
 
-        stitch_event: {
-            id: 12,
-            supportedOnOptitrack: true,
-            supportedOnRealTime: true,
-            parameters: {
-                sourcePublicCustomerId: {
-                    optional: false,
-                    name: "sourcePublicCustomerId",
-                    id: 1,
-                    type: "String",
-                    optiTrackDimensionId: 8
-                },
-                sourceVisitorId: {
-                    optional: false,
-                    name: "sourceVisitorId",
-                    id: 2,
-                    type: "String",
-                    optiTrackDimensionId: 9
-                },
-                targetVsitorId: {
-                    optional: false,
-                    name: "targetVsitorId",
-                    id: 3,
-                    type: "String",
-                    optiTrackDimensionId: 10
-                }
-            }
-        },
+        
         set_user_id_event: {
-            id: 13,
+            id: 1001,
             supportedOnOptitrack: true,
             supportedOnRealTime: true,
             parameters: {
@@ -235,7 +205,7 @@ var optimoveTenantConfiguration = {
             }
         },
         Set_email_event: {
-            id: 14,
+            id: 1002,
             supportedOnOptitrack: true,
             supportedOnRealTime: true,
             parameters: {
@@ -247,6 +217,48 @@ var optimoveTenantConfiguration = {
                     optiTrackDimensionId: 8
                 }
             }
-        }
+        },
+         page_category_event: {
+            id: 1003,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: false,
+            parameters: {
+                category: {
+                    optional: false,
+                    name: "category",
+                    id: 1,
+                    type: "String",
+                    optiTrackDimensionId: 8
+                }
+            }
+        },
+        stitch_event: {
+            id: 1004,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                sourcePublicCustomerId: {
+                    optional: false,
+                    name: "sourcePublicCustomerId",
+                    id: 1,
+                    type: "String",
+                    optiTrackDimensionId: 8
+                },
+                sourceVisitorId: {
+                    optional: false,
+                    name: "sourceVisitorId",
+                    id: 2,
+                    type: "String",
+                    optiTrackDimensionId: 9
+                },
+                targetVsitorId: {
+                    optional: false,
+                    name: "targetVsitorId",
+                    id: 3,
+                    type: "String",
+                    optiTrackDimensionId: 10
+                }
+            }
+        },
     }
 }
