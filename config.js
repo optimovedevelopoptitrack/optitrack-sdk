@@ -1,5 +1,5 @@
 var optimoveTenantConfiguration = {
-    version: "1.0.0.0",
+    version: "1.0.0",
     realtimeToken: "dfasdf4fwf234rfwef2rf2w3efd234df2freff23dff3",
     realtimeGateway: "https://102.22.33.44/",
     optitrackEndpoint: "http://104.155.164.245/",
