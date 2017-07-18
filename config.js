@@ -1,8 +1,8 @@
 var optimoveTenantConfiguration = {
-    version: "1.0.0",
+    version: "1.0.0.0",
     realtimeToken: "dfasdf4fwf234rfwef2rf2w3efd234df2freff23dff3",
     realtimeGateway: "https://102.22.33.44/",
-    optitrackEndpoint: "http://35.184.87.239/",
+    optitrackEndpoint: "http://104.155.164.245/",
     eventIdCustomDimensionId: 6,
     eventNameCustomDimensionId: 7,
     isSPA: false,
@@ -21,7 +21,7 @@ var optimoveTenantConfiguration = {
     MinimumEmailAddressLength: 3,
     heartBeatTimer: 30,
     cookieMatcherId: null,
-    optitTrackerName: "optitTrackerv3.03.js",
+ 
     options: {
         showDimmer: true,
         showWatermark: true,
