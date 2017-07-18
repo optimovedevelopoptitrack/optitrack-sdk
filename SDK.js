@@ -200,8 +200,8 @@ var optimoveSDK = function(){
             jsonpAsyncCall("reportEvent_b", { tid : _configuration.realtimeToken,
                     cid : event.userId,
                     eid : event.id,
-                    visitorId : event.visitorData ? event.visitorData.visitorId : null,
-                    visitCount : event.visitorData ? event.visitorData.visitCount : null,
+                    vid : event.visitorData ? event.visitorData.visitorId : null,
+                    vcount : event.visitorData ? event.visitorData.visitCount : null,
                     context : JSON.stringify(params)
                 },
                 function (response) {
@@ -711,12 +711,13 @@ var optimoveSDK = function(){
         // Function: getOptitrackVisitorInfo
         // Args: updatedUserId
         // Sets the Optimove SDK Logging Mode
-        // We ill allow to set null as userId,
+        // We will allow to set null as userId,
+        // Other values like "Undefined" "null" etc. are invalid
         // inorder to enable reset of the curren userId when logged out
         // ---------------------------------------
         var validateUserId = function(updatedUserId){
 
-            if (typeof updatedUserId == 'undefined' || typeof updatedUserId != 'string' || updatedUserId == undefined || updatedUserId == '' || updatedUserId == 'null' ||  updatedUserId == 'undefined') {
+            if (typeof updatedUserId == 'undefined' || typeof updatedUserId != 'string' || updatedUserId == undefined || updatedUserId == '' || updatedUserId == 'null' ||  updatedUserId.includes("undefine")) {
                 return false;
             }
             else{
