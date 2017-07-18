@@ -231,6 +231,7 @@ var optimoveSDK = function(){
         var SetEmailEvent_name = 'Set_email_event';
         var StitchUsersEvent_name = 'stitch_event';
         var PageCategoryEvent_name = 'page_category_event';
+        var UserAgentHeaderEvent_name =  'user_agent_header_event';
         var email_param_name = "email";
         var originalVisitorId_param_name = "originalVisitorId";
         var userId_param_name = "userId";
@@ -388,10 +389,15 @@ var optimoveSDK = function(){
                 {
                     logPageCategoryEvent(THIS,category);
                 }
+                
+                if(_sdkConfig.optitrackMetaData.sendUserAgentHeader == true)
+                {
+                    logUserAgentHeaderEvent(THIS);
+                }
 
                 if(_sdkConfig.supportCookieMatcher == true)
                 {
-                    updateCookieMatcher(THIS, updatedUserId);
+                    updateCookieMatcher(THIS);
                 }
 
                 if(_sdkConfig.supportUserEmailStitch == true)
@@ -535,7 +541,7 @@ var optimoveSDK = function(){
             return jsonData;
         };
 
-         // ---------------------------------------
+        // ---------------------------------------
         // Function: logPageCategoryEvent
         // Args: email - the User email
         // Sets the email in Optitrack Infrastructure
@@ -546,6 +552,17 @@ var optimoveSDK = function(){
             
         };
 
+        // ---------------------------------------
+        // Function: logUserAgentHeaderEvent
+        // Args: None
+        // Sets the UserAgent of the Current Browser
+        // ---------------------------------------
+        var logUserAgentHeaderEvent= function (THIS){
+            if(typeof navigator != 'undefined' && typeof navigator.userAgent != 'undefined' ){
+                logOptitrackCustomEvent(THIS,UserAgentHeaderEvent_name, {user_agent_header: navigator.userAgent});
+            }                                    
+        };
+        
         // ---------------------------------------
         // Function: logOptitrackUserEmail
         // Args: email - the User email
@@ -586,7 +603,7 @@ var optimoveSDK = function(){
                             logSetUserIdEvent(THIS, origVisitorId, updatedUserId, updatedVisitorId);
                             if(_sdkConfig.supportCookieMatcher == true)
                             {
-                                updateCookieMatcher(THIS, updatedUserId);
+                                updateCookieMatcher(THIS);
                             }
                         }
                     }
@@ -645,7 +662,7 @@ var optimoveSDK = function(){
         // Args: None
         // Sets the Optimove SDK Logging Mode
         // ---------------------------------------
-        var updateCookieMatcher = function (THIS, updatedUserId)
+        var updateCookieMatcher = function (THIS)
         {
             var cookieMatcherUserId = null;
             if(_userId != null)
