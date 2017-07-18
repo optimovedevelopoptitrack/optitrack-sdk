@@ -3,6 +3,7 @@ var optimoveTenantConfiguration = {
     realtimeToken: "dfasdf4fwf234rfwef2rf2w3efd234df2freff23dff3",
     realtimeGateway: "https://102.22.33.44/",   
     optitrackMetaData:{
+        sendUserAgentHeader: true,
         enableHeartBeatTimer: true,
         heartBeatTimer: 30,
         eventIdCustomDimensionId: 6,
@@ -110,6 +111,20 @@ var optimoveTenantConfiguration = {
                     id: 3,
                     type: "String",
                     optiTrackDimensionId: 10
+                }
+            }
+        },
+        user_agent_header_event: {
+            id: 1005,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: false,
+            parameters: {
+                user_agent_header: {
+                    optional: false,
+                    name: "user_agent_header",
+                    id: 1,
+                    type: "String",
+                    optiTrackDimensionId: 8
                 }
             }
         },
