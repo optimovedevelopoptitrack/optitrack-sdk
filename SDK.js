@@ -200,8 +200,8 @@ var optimoveSDK = function(){
             jsonpAsyncCall("reportEvent_b", { tid : _configuration.realtimeToken,
                     cid : event.userId,
                     eid : event.id,
-                    vid : event.visitorData ? event.visitorData.visitorId : null,
-                    vcount : event.visitorData ? event.visitorData.visitCount : null,
+                    visitorId : event.visitorData ? event.visitorData.visitorId : null,
+                    visitCount : event.visitorData ? event.visitorData.visitCount : null,
                     context : JSON.stringify(params)
                 },
                 function (response) {
