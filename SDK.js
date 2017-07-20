@@ -230,7 +230,7 @@ var optimoveSDK = function(){
         }
 
         return {
-            reportEvent : _reportEvent
+            reportEvent : reportEvent
         }
 
     }()
