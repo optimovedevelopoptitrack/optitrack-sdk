@@ -132,7 +132,7 @@ var optimoveSDK = function(){
 
             try {
                 var paramsString = objToParams(data);
-                var url = _configuration.realtimeMetaData.realtimeGateway + event + "?" + paramsString;
+                var url = _configuration.realtimeGateway + event + "?" + paramsString;
                 var callbackName = 'optiReal_callback_' + createGuid();
                 window[callbackName] = function (data) {
                     delete window[callbackName];
@@ -166,19 +166,19 @@ var optimoveSDK = function(){
 
         var handleJsonpResponse = function (response) {
             try {
-                if (_configuration.realtimeMetaData.options.popupCallBack) {
-                    _configuration.realtimeMetaData.options.popupCallBack(response);
+                if (_configuration.options.popupCallBack) {
+                    _configuration.options.popupCallBack(response);
                 }
                 else{
                     if (response.IsSuccess && response.Data != '') {
                         var popupDiv = document.createElement('div');
                         var divHtml = "";
-                        var opacity = _configuration.realtimeMetaData.options.showDimmer ? 0.5 : 0;
+                        var opacity = _configuration.options.showDimmer ? 0.5 : 0;
                         divHtml = "<div id='optiRealPopupDimmer' style='position: fixed;bottom: 0;right: 0;top: 0;left: 0;overflow: hidden;display: none; z-index:999999999;background: #000000;opacity : " + opacity + ";display:block;width: auto;height: auto;'></div>";
                         document.addEventListener("mousedown", OptiRealApi.closePopup);
                         var poweredByHtml = "<div style='position: absolute;z-index:9999999999; clear:both;font-family : Arial;font-size : 9px;color : #CCCCCC;padding-top:6px;margin-left: 5px;'>Powered by Optimove</div>";
                         divHtml += "<div style='max-height:90%;max-width:90%;top: 50%;left: 50%;transform:translate(-50%, -50%);position: fixed;z-index:9999999999;'><div style=' clear:both;min-width: 100px;min-height: 100px;background-color:white; text-align:center;box-shadow:0 0 5px 0 rgba(0, 0, 0, 0.2);'><div style='position:absolute;right:-13px;top:-13px;cursor:pointer;z-index:99999999999; color:white' onclick='OptiRealApi.closePopup();'><img id='optiRealclosePopupImage' src='https://d3qycynbsy5rsn.cloudfront.net/banner_pop_x.png' /></div><div style='border-style: solid;border-width: 5px;border-radius:5px; border-color:white;' >" + response.Data + "</div></div>"
-                            + (_configuration.realtimeMetaData.options.showDimmer && _configuration.realtimeMetaData.options.showWatermark ? poweredByHtml : "") + "</div>";
+                            + (_configuration.options.showDimmer && _configuration.options.showWatermark ? poweredByHtml : "") + "</div>";
                         popupDiv.innerHTML = divHtml;
                         document.body.appendChild(popupDiv);
                         //OptiRealApi.popup = popupDiv;
@@ -191,36 +191,17 @@ var optimoveSDK = function(){
             }
         }
 
-        var callRealtimeAsync = function (event, data, callback) {
-            var paramsString = objToParams(data);
-            var xhttp = new XMLHttpRequest(); 
-            var url =  _configuration.realtimeMetaData.realtimeGateway.lastIndexOf('/') == _configuration.realtimeMetaData.realtimeGateway.length -1 ? 
-                                                                                                 _configuration.realtimeMetaData.realtimeGateway + event : 
-                                                                                                 _configuration.realtimeMetaData.realtimeGateway + '/' + event;
-            xhttp.open("POST", url, true);
-            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            xmlhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    var responseData = JSON.parse(this.responseText);
-                    handleJsonpResponse(response);
-                }
-            };
-            
-            xhttp.send(paramsString);
-        }
-
-        var reportEvent = function (event) {
+        var _reportEvent = function (event) {
             var params = {};
             for(var eventParam in event.parameters){
                 params[eventParam] = event.parameters[eventParam].value;
             }
 
-            callRealtimeReportEventAsync("reportEvent", {
-                    tid : _configuration.realtimeMetaData.realtimeToken,
+            jsonpAsyncCall("reportEvent_b", { tid : _configuration.realtimeToken,
                     cid : event.userId,
                     eid : event.id,
-                    visitorId : event.visitorData ? event.visitorData.visitorId : null,
-                    visitCount : event.visitorData ? event.visitorData.visitCount : null,
+                    vid : event.visitorData ? event.visitorData.visitorId : null,
+                    vcount : event.visitorData ? event.visitorData.visitCount : null,
                     context : JSON.stringify(params)
                 },
                 function (response) {
@@ -230,7 +211,7 @@ var optimoveSDK = function(){
         }
 
         return {
-            reportEvent : reportEvent
+            reportEvent : _reportEvent
         }
 
     }()
@@ -412,7 +393,12 @@ var optimoveSDK = function(){
                 if(_sdkConfig.optitrackMetaData.sendUserAgentHeader == true)
                 {
                     logUserAgentHeaderEvent(THIS);
-                }               
+                }
+
+                if(_sdkConfig.supportCookieMatcher == true)
+                {
+                    updateCookieMatcher(THIS);
+                }
 
                 if(_sdkConfig.supportUserEmailStitch == true)
                 {
@@ -614,7 +600,11 @@ var optimoveSDK = function(){
                             _tracker.setUserId(updatedUserId);
                             _userId = updatedUserId;
                             var updatedVisitorId = _tracker.getVisitorId();
-                            logSetUserIdEvent(THIS, origVisitorId, updatedUserId, updatedVisitorId);                            
+                            logSetUserIdEvent(THIS, origVisitorId, updatedUserId, updatedVisitorId);
+                            if(_sdkConfig.supportCookieMatcher == true)
+                            {
+                                updateCookieMatcher(THIS);
+                            }
                         }
                     }
                 }
@@ -665,7 +655,43 @@ var optimoveSDK = function(){
             } catch (err) {
 
             }
-        };       
+        };
+
+        // ---------------------------------------
+        // Function: updateCookieMatcher
+        // Args: None
+        // Sets the Optimove SDK Logging Mode
+        // ---------------------------------------
+        var updateCookieMatcher = function (THIS)
+        {
+            var cookieMatcherUserId = null;
+            if(_userId != null)
+            {
+                cookieMatcherUserId = _userId;
+            }else{
+                cookieMatcherUserId = _tracker.getVisitorId();
+            }
+
+            setOptimoveCookie(cookieMatcherUserId);
+            var siteId = getOptiTrackTenantIdFromConfig(_sdkConfig);
+            matchCookie(siteId, _sdkConfig.optimoveCookieMatcherId);
+            var setOptimoveCookie = function(cookieMatcherUserId) {
+                var setCookieUrl = "https://gcm.optimove.events/setCookie?optimove_id="+cookieMatcherUserId;
+                var setCookieNode = document.createElement("img");
+                setCookieNode.style.display = "none";
+                setCookieNode.setAttribute("src", setCookieUrl);
+                document.body.appendChild(setCookieNode);
+            };
+
+            matchCookie = function(tenantId, optimoveCookieMatcherId) {
+                //var url = "https://cm.g.doubleclick.net/pixel?google_nid=OptimoveCookieMatcherID&google_cm&tenant_id=TenantID";
+                var url = "https://cm.g.doubleclick.net/pixel?google_nid=" + optimoveCookieMatcherId + "&google_cm&tenant_id=" +tenantId;
+                var node = document.createElement("img");
+                node.style.display = "none";
+                node.setAttribute("src", url);
+                document.body.appendChild(node);
+            }
+        }
 
         // ---------------------------------------
         // Function: getOptitrackVisitorInfo
@@ -875,7 +901,7 @@ var optimoveSDK = function(){
                 _tracker.deleteCustomDimension (customDimensionId);
             };
             
-        };
+        }
 
         return {
             initializeOptiTrack : initializeOptiTrack,
@@ -890,60 +916,13 @@ var optimoveSDK = function(){
         
     }();
 
-    var cookieMatcherModule = function(){
-
-        // ---------------------------------------
-        // Function: updateCookieMatcher
-        // Args: customer userId or null if visitor
-        // Sets the Optimove SDK Logging Mode
-        // ---------------------------------------
-        var updateCookieMatcher = function (userId){          
-
-            var setOptimoveCookie = function(cookieMatcherUserId) {
-                var setCookieUrl = "https://gcm.optimove.events/setCookie?optimove_id="+cookieMatcherUserId;
-                var setCookieNode = document.createElement("img");
-                setCookieNode.style.display = "none";
-                setCookieNode.setAttribute("src", setCookieUrl);
-                document.body.appendChild(setCookieNode);
-            };
-
-            var matchCookie = function(tenantId, optimoveCookieMatcherId) {
-                //var url = "https://cm.g.doubleclick.net/pixel?google_nid=OptimoveCookieMatcherID&google_cm&tenant_id=TenantID";
-                var url = "https://cm.g.doubleclick.net/pixel?google_nid=" + optimoveCookieMatcherId + "&google_cm&tenant_id=" +tenantId;
-                var node = document.createElement("img");
-                node.style.display = "none";
-                node.setAttribute("src", url);
-                document.body.appendChild(node);
-            };
-
-             var cookieMatcherUserId = null;
-            if(typeof userId != 'undefined' && userId != null)
-            {
-                cookieMatcherUserId = userId;
-            }else{
-                var info  = getVisitorsObj();
-                cookieMatcherUserId = info.visitorId;
-            }
-
-            setOptimoveCookie(cookieMatcherUserId);
-
-            var siteId = _configuration.optitrackMetaData.siteId;
-            matchCookie(siteId, _configuration.cookieMatcherMetaData.optimoveCookieMatcherId);
-        };
-
-         return {
-            updateCookieMatcher : updateCookieMatcher,           
-        };
-    }();
-    
     var getVisitorsObj = function(){
         var visitorsInfo = optitrackModule.getOptitrackVisitorInfo();
         return {
             visitorId : visitorsInfo[1],
             visitCount : visitorsInfo[3]
         }
-    };
-
+    }
     var _API = {
         getVersion : function(){
             return _version;
@@ -976,11 +955,6 @@ var optimoveSDK = function(){
                 logger.log("info","call setUserId Optitrack");
                  optitrackModule.setUserId(updatedUserId);
             }
-            
-            if(_configuration.supportCookieMatcher == true)
-            {
-                cookieMatcherModule.updateCookieMatcher(updatedUserId);
-            }
            
         },
         setUserEmail : function(email){
@@ -988,18 +962,12 @@ var optimoveSDK = function(){
             if(_configuration.enableOptitrack){
                 logger.log("info","call setUserEmail Optitrack");
                 optitrackModule.logUserEmail();
-            }           
+            }
         },
         setPageVisit : function(customURL, pageTitle, category){
-
             if(_configuration.enableOptitrack){
                 logger.log("info","call setPageVisit Optitrack");
-                optitrackModule.logPageVisitEvent(customURL, pageTitle, category);                
-            }
-
-            if(_configuration.supportCookieMatcher == true)
-            {
-                cookieMatcherModule.updateCookieMatcher(null);
+                optitrackModule.logPageVisitEvent(customURL, pageTitle, category);
             }
 
         }
