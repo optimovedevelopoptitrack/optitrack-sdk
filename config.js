@@ -2,7 +2,7 @@ var optimoveTenantConfiguration = {
     version: "1.0.0",
     realtimeMetaData:{
         realtimeToken: "dfasdf4fwf234rfwef2rf2w3efd234df2freff23dff3",
-        realtimeGateway: "https://130.211.222.149/",   
+        realtimeGateway: "https://102.22.33.44/",   
         options: {
         showDimmer: true,
         showWatermark: true,
@@ -11,6 +11,7 @@ var optimoveTenantConfiguration = {
     },
     optitrackMetaData:{
         sendUserAgentHeader: true,
+        useSessionStorage: true,
         enableHeartBeatTimer: true,
         heartBeatTimer: 30,
         eventCategoryName: "LogEvent",
