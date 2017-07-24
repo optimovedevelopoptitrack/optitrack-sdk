@@ -120,36 +120,7 @@ var optimoveSDK = function(){
     }
 
     var realTimeModule = function(){
-        var jsonpAsyncCall = function (event, data, callback) {
-            var createGuid = function () {
-                function generateRand() {
-                    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-                }
-
-                var guid = (generateRand() + generateRand() + generateRand() + generateRand()).toLowerCase();
-                return guid;
-            }
-
-            try {
-                var paramsString = objToParams(data);
-                var url = _configuration.realtimeMetaData.realtimeGateway + event + "?" + paramsString;
-                var callbackName = 'optiReal_callback_' + createGuid();
-                window[callbackName] = function (data) {
-                    delete window[callbackName];
-                    document.head.removeChild(script);
-                    callback(data);
-                };
-
-                var script = document.createElement('script');
-                script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
-                document.head.appendChild(script);
-            }
-            catch (e) {
-                logger.log("error","Fail to parse request (jsonp)");
-            }
-        }
-
-        var objToParams = function (obj) {
+      var objToParams = function (obj) {
             var paramString = '';
             for (var key in obj) {
                 var value = obj[key];
@@ -162,14 +133,11 @@ var optimoveSDK = function(){
             }
 
             return paramString;
-        }
+      }
 
-        var handleJsonpResponse = function (response) {
+        var executePopup = function (response) {
             try {
-                if (_configuration.realtimeMetaData.options.popupCallBack) {
-                    _configuration.realtimeMetaData.options.popupCallBack(response);
-                }
-                else{
+                
                     if (response.IsSuccess && response.Data != '') {
                         var popupDiv = document.createElement('div');
                         var divHtml = "";
@@ -181,13 +149,10 @@ var optimoveSDK = function(){
                             + (_configuration.realtimeMetaData.options.showDimmer && _configuration.realtimeMetaData.options.showWatermark ? poweredByHtml : "") + "</div>";
                         popupDiv.innerHTML = divHtml;
                         document.body.appendChild(popupDiv);
-                        //OptiRealApi.popup = popupDiv;
                     }
-                }
-            }
+            }            
             catch (e) {
-                logger.log("error", "real time handle response error")
-
+                logger.log("error", "Error while executing popup");
             }
         }
 
@@ -202,7 +167,12 @@ var optimoveSDK = function(){
             xmlhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     var responseData = JSON.parse(this.responseText);
-                    handleJsonpResponse(response);
+                    if (_configuration.realtimeMetaData.options.popupCallBack) {
+                        _configuration.realtimeMetaData.options.popupCallBack(response);
+                    }
+                    else{
+                        executePopup(response);
+                    }
                 }
             };
             
@@ -1083,6 +1053,9 @@ var optimoveSDK = function(){
                 }
             }
         },
+        setRealTimePopup : function(popupFunc){
+          _configuration.realtimeMetaData.popupCallBack = popupFunc;  
+        },
         setUserId : function(updatedUserId){
             _userId = updatedUserId;
             if(_configuration.enableOptitrack){
@@ -1108,6 +1081,12 @@ var optimoveSDK = function(){
             if(_configuration.enableOptitrack){
                 logger.log("info","call setPageVisit Optitrack");
                 optitrackModule.logPageVisitEvent(customURL, pageTitle, category);                
+            }
+
+            if(_configuration.enableRealtime){
+                logger.log("info","call setPageVisit Realtime");
+                var event = validateEvent("PageVisit", {customURL: customURL, pageTitle : pageTitle, category : category});
+                realTimeModule.reportEvent(event);
             }
 
             if(_configuration.supportCookieMatcher == true)
