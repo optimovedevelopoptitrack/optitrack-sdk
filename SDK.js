@@ -206,7 +206,7 @@ var optimoveSDK = function(){
             callRealtimeAsync("reportEvent", {
                     tid : _configuration.realtimeMetaData.realtimeToken,
                     cid : event.userId,
-                    eid : event.id,
+                    eid : event.eventMetadata.id,
                     visitorId : event.visitorData ? event.visitorData.visitorId : null,
                     visitCount : event.visitorData ? event.visitorData.visitCount : null,
                     context : JSON.stringify(params)
