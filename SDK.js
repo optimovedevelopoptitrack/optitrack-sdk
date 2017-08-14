@@ -198,7 +198,7 @@ var optimoveSDK = function(){
                             _configuration.realtimeMetaData.popupCallBack(response);
                         }
                         else{
-                             executePopup(response);
+                             executePopup(responseData);
                         }
                     
                     }
