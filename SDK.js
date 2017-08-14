@@ -78,21 +78,9 @@ var optimoveSDK = function(){
         var validEvent = {};
 
         if(!_configuration.events[eventName]){
+            logger.log("info", "event:" + eventName +" does node exsits");
             return false;
         }else{
-            validEvent.id = _configuration.events[eventName].id;
-            if(parameters["userId"]){
-                validEvent.userId = parameters["userId"];
-            }else if(_configuration.enableOptitrack){
-                // check if optitrackenabled and if check if setUserId was called
-
-                // check optitrack visitorId and session number
-
-            }else{
-                logger.log("info", "parameter userId is required")
-                return false;
-            }
-
             validEvent["eventName"] = eventName;
             validEvent["eventMetadata"]= _configuration.events[eventName];
             validEvent["parameters"] = {};
@@ -120,6 +108,33 @@ var optimoveSDK = function(){
         }
 
         return validEvent;
+    }
+
+    var reportEvent = function(eventName, parameters){
+            var validEvent = validateEvent(eventName, parameters);
+            if(validEvent){
+                if(_configuration.enableOptitrack){
+                    logger.log("info","in reportEvent Optitrack");
+                    optitrackModule.logEvent(eventName, parameters);
+                }
+                if(_configuration.enableRealtime){
+                    reportEventRealtime(validEvent);  
+                }      
+            }
+    }
+    
+
+    var reportEventRealtime = function(validEvent){
+       logger.log("info","in reportEvent Real time");
+        validEvent.userId = _userId;
+        if(_configuration.enableOptitrack && _configuration.enableVisitors){
+            validEvent.visitorData = getVisitorsObj();
+        }else if(!_userId){
+            logger.log("info", "parameter userId is required, please call setUserId method")
+            return false;
+        }
+        
+        realTimeModule.reportEvent(validEvent);        
     }
 
     var realTimeModule = function(){
@@ -1043,27 +1058,20 @@ var optimoveSDK = function(){
         getConfigurationVersion : function(){
             return _configuration.version;
         },
-        reportEvent : function(eventName, parameters){
-            var validEvent = validateEvent(eventName, parameters);
-            if(validEvent){
-                validEvent.userId = _userId;
-                if(_configuration.enableOptitrack){
-                    logger.log("info","in reportEvent Optitrack");
-                    optitrackModule.logEvent(eventName, parameters);
-                }
-
-                if(_configuration.enableRealtime){
-                    logger.log("info","in reportEvent Real time");
-                    if(_configuration.enableOptitrack){
-                        validEvent.visitorData = getVisitorsObj();
-                    }
-
-                    realTimeModule.reportEvent(validEvent);
-                }
+        reportEvent : reportEvent,
+        
+        setRealTimeOptions : function(options){
+            if(options.showDimmer != null){
+                _configuration.realtimeMetaData.showDimmer = options.showDimmer;
             }
-        },
-        setRealTimePopup : function(popupFunc){
-            _configuration.realtimeMetaData.popupCallBack = popupFunc;
+
+            if(options.showWatermark != null){
+                _configuration.realtimeMetaData.showWatermark = options.showWatermark;
+            }
+
+            if(options.reportEventCallback != null){
+                _configuration.realtimeMetaData.popupCallBack = reportEventCallback;
+            }    
         },
         setUserId : function(updatedUserId){
             _userId = updatedUserId;
@@ -1084,9 +1092,13 @@ var optimoveSDK = function(){
                 logger.log("info","call setUserEmail Optitrack");
                 optitrackModule.logUserEmail();
             }
+
+            if(_configuration.enableRealtime){
+                var event = validateEvent("SetUserEmail", {email: _userEmail});
+                reportEventRealtime(event);
+            }
         },
         setPageVisit : function(customURL, pageTitle, category){
-
             if(_configuration.enableOptitrack){
                 logger.log("info","call setPageVisit Optitrack");
                 optitrackModule.logPageVisitEvent(customURL, pageTitle, category);
@@ -1095,7 +1107,7 @@ var optimoveSDK = function(){
             if(_configuration.enableRealtime){
                 logger.log("info","call setPageVisit Realtime");
                 var event = validateEvent("PageVisit", {customURL: customURL, pageTitle : pageTitle, category : category});
-                realTimeModule.reportEvent(event);
+                reportEventRealtime(event);
             }
 
             if(_configuration.supportCookieMatcher == true)
@@ -1105,11 +1117,10 @@ var optimoveSDK = function(){
 
         }
     }
-
+    
     return {
         initialize : init,
         API : _API,
-
     }
 
 }();
