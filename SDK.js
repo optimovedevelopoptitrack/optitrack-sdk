@@ -117,7 +117,7 @@ var optimoveSDK = function(){
                     logger.log("info","in reportEvent Optitrack");
                     optitrackModule.logEvent(eventName, parameters);
                 }
-                if(_configuration.enableRealtime){
+                if(_configuration.enableRealtime && validEvent.eventMetadata.supportedOnRealTime){
                     reportEventRealtime(validEvent);  
                 }      
             }
