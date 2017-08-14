@@ -1,8 +1,8 @@
 'use strict'
 
 var optimoveSDK = function(){
-    var _version = "1.0.0";
-    var _sdkDomain = "https://optimove-web-sdk.firebaseapp.com/";
+    var _version = "1.0.1";
+    var _sdkDomain = "http://sdk-cdn.optimove.net/";
     var _configuration;
     var _userId;
     var _userEmail;
@@ -32,7 +32,7 @@ var optimoveSDK = function(){
             logger.setLevel(logLevel);
         }
         //load script
-        var configurationURL = _sdkDomain + token + "/" + confversion+".js";
+        var configurationURL = _sdkDomain  + "webconfig/" + token + "/"+ confversion+".js";
         loadScript(configurationURL, function () {
             logger.log("info", "configuration loaded successfully");
             setConfiguration(callback);
