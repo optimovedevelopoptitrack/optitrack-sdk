@@ -191,14 +191,19 @@ var optimoveSDK = function(){
             xmlhttp.open("POST", url, true);
             xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
             xmlhttp.onreadystatechange = function() {
-                if (xmlhttp.readyState == XMLHttpRequest.DONE && xmlhttp.status == 200) {
-                    var responseData = JSON.parse(this.responseText);
-                    if (_configuration.realtimeMetaData.options.popupCallBack) {
-                        _configuration.realtimeMetaData.options.popupCallBack(response);
+                try{
+                    if (xmlhttp.readyState == XMLHttpRequest.DONE && xmlhttp.status == 200) {
+                        var responseData = JSON.parse(this.responseText);
+                        if (_configuration.realtimeMetaData.popupCallBack) {
+                            _configuration.realtimeMetaData.popupCallBack(response);
+                        }
+                        else{
+                             executePopup(response);
+                        }
+                    
                     }
-                    else{
-                        executePopup(response);
-                    }
+                }catch(err){
+                    logger.log("error", err);
                 }
             };
 
