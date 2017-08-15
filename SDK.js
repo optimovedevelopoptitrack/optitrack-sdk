@@ -1117,8 +1117,12 @@ var optimoveSDK = function(){
         setUserEmail : function(email){
             _userEmail = email;
             if(_configuration.enableOptitrack){
-                logger.log("info","call setUserEmail Optitrack");
-                optitrackModule.logUserEmail();
+                try{
+                    logger.log("info","call setUserEmail Optitrack");
+                    optitrackModule.logUserEmail();
+                }catch(err){
+                    logger.log("error", err);
+                }
             }
 
             if(_configuration.enableRealtime){
