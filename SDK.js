@@ -1126,7 +1126,7 @@ var optimoveSDK = function(){
             }
 
             if(_configuration.enableRealtime){
-                var event = validateEvent("SetUserEmail", {email: _userEmail});
+                var event = validateEvent("Set_email_event", {email: _userEmail});
                 reportEventRealtime(event);
             }
         },
