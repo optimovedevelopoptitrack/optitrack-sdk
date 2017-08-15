@@ -146,6 +146,7 @@ var optimoveSDK = function(){
     }
 
     var realTimeModule = function(){
+        var _popup;
         var objToParams = function (obj) {
             var paramString = '';
             for (var key in obj) {
@@ -161,6 +162,19 @@ var optimoveSDK = function(){
             return paramString;
         }
 
+        var closePopup = function (element) {
+            if (element) {
+                if (element.target == document.getElementById("optiRealPopupDimmer")) {
+                    document.body.removeChild(_popup);
+                    document.removeEventListener("mousedown", closePopup);
+                }
+                if (element.target.id == "optiRealclosePopupImage") {
+                    document.body.removeChild(_popup);
+                    document.removeEventListener("mousedown", closePopup);
+                }
+            }
+        }
+
         var executePopup = function (response) {
             try {
 
@@ -174,26 +188,14 @@ var optimoveSDK = function(){
                     divHtml += "<div style='max-height:90%;max-width:90%;top: 50%;left: 50%;transform:translate(-50%, -50%);position: fixed;z-index:9999999999;'><div style=' clear:both;min-width: 100px;min-height: 100px;background-color:white; text-align:center;box-shadow:0 0 5px 0 rgba(0, 0, 0, 0.2);'><div style='position:absolute;right:-13px;top:-13px;cursor:pointer;z-index:99999999999; color:white' onclick='OptiRealApi.closePopup();'><img id='optiRealclosePopupImage' src='https://d3qycynbsy5rsn.cloudfront.net/banner_pop_x.png' /></div><div style='border-style: solid;border-width: 5px;border-radius:5px; border-color:white;' >" + response.Data + "</div></div>"
                         + (_configuration.realtimeMetaData.showDimmer && _configuration.realtimeMetaData.showWatermark ? poweredByHtml : "") + "</div>";
                     popupDiv.innerHTML = divHtml;
+                    _popup = popupDiv;
                     document.body.appendChild(popupDiv);
                 }
             }
             catch (e) {
                 logger.log("error", "Error while executing popup");
             }
-        }
-
-        var closePopup = function (element) {
-            if (element) {
-                if (element.target == document.getElementById("optiRealPopupDimmer")) {
-                    document.body.removeChild(OptiRealApi.popup);
-                    document.removeEventListener("mousedown", OptiRealApi.closePopup);
-                }
-                if (element.target.id == "optiRealclosePopupImage") {
-                    document.body.removeChild(OptiRealApi.popup);
-                    document.removeEventListener("mousedown", OptiRealApi.closePopup);
-                }
-            }
-        }
+        }       
 
         var callRealtimeAsync = function (event, data, callback) {
             var paramsString = objToParams(data);
