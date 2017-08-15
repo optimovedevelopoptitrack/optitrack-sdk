@@ -150,7 +150,7 @@ var optimoveSDK = function(){
         var objToParams = function (obj) {
             var paramString = '';
             for (var key in obj) {
-                var value = obj[key];
+                var value = obj[key] ? obj[key] : "";
                 if (obj[key] instanceof Array) {
                     value = encodeURIComponent(JSON.stringify(value));
                 }
