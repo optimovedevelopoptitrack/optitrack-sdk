@@ -1102,24 +1102,24 @@ var optimoveSDK = function(){
             }    
         },
         setUserId : function(updatedUserId){
-            _userId = updatedUserId;
+            _userId = updatedUserId.trim();
             if(_configuration.enableOptitrack){
                 logger.log("info","call setUserId Optitrack");
-                optitrackModule.setUserId(updatedUserId);
+                optitrackModule.setUserId(_userId);
             }
 
             if(_configuration.supportCookieMatcher == true)
             {
-                cookieMatcherModule.updateCookieMatcher(updatedUserId);
+                cookieMatcherModule.updateCookieMatcher(_userId);
             }
 
         },
         setUserEmail : function(email){
-            _userEmail = email;
+            _userEmail = email.trim();
             if(_configuration.enableOptitrack){
                 try{
                     logger.log("info","call setUserEmail Optitrack");
-                    optitrackModule.logUserEmail();
+                    optitrackModule.logUserEmail(_userEmail);
                 }catch(err){
                     logger.log("error", err);
                 }
@@ -1130,7 +1130,11 @@ var optimoveSDK = function(){
                 reportEventRealtime(event);
             }
         },
-        setPageVisit : function(customURL, pageTitle, category){
+        setPageVisit : function(customURLIn, pageTitleIn, categoryIn){
+            var customURL = customURLIn.trim();
+            var pageTitle = pageTitleIn.trim();
+            var category = categoryIn.trim();
+
             if(_configuration.enableOptitrack){
                 logger.log("info","call setPageVisit Optitrack");
                 optitrackModule.logPageVisitEvent(customURL, pageTitle, category);
