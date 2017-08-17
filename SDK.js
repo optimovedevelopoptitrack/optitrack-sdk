@@ -110,10 +110,23 @@ var optimoveSDK = function(){
         return validEvent;
     }
 
+    var normalizeEventParameters = function (event_parameters){
+        var parameterNames = Object.getOwnPropertyNames(event_parameters);
+        parameterNames.forEach(function (paramName) {
+            var currParamValue = event_parameters[paramName];
+            if(typeof currParamValue == "string")
+                {
+                    var normalizedValue = currParamValue.trim();
+                    event_parameters[paramName] = normalizedValue; 
+                }          
+        })
+    }
+
     var reportEvent = function(eventName, parameters){
         try{
             var validEvent = validateEvent(eventName, parameters);
             if(validEvent){
+                 normalizeEventParameters(parameters);
                 if(_configuration.enableOptitrack){
                     try{
                         logger.log("info","in reportEvent Optitrack");
