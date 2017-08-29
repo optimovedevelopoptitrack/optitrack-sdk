@@ -1,7 +1,7 @@
 'use strict'
 
 var optimoveSDK = function(){
-    var _version = "1.0.1";
+    var _version = "1.0.3";
     var _sdkDomain = "http://sdk-cdn.optimove.net/";
     var _configuration;
     var _userId = null;
@@ -81,16 +81,18 @@ var optimoveSDK = function(){
             logger.log("info", "event:" + eventName +" does node exsits");
             return false;
         }else{
+            validEvent["userId"] = null;
+            validEvent["visitorData"] = null;
             validEvent["eventName"] = eventName;
             validEvent["eventMetadata"]= _configuration.events[eventName];
             validEvent["parameters"] = {};
             var event = _configuration.events[eventName];
             for(var parameterName in event.parameters ){
                 var paramMetadata = event.parameters[parameterName];
-                if(paramMetadata.required && !parameters[parameterName]){
+                if(paramMetadata.optional == false && parameters[parameterName] == undefined){
                     logger.log("info", "required paramMetadata '"+ parameterName +"' is missing");
                     return false;
-                }else{
+                }else if(parameters[parameterName] != undefined){ 
                     if(paramMetadata.type == "String" && typeof(parameters[parameterName]) != "string" ){
                         logger.log("info", "parameter '"+ parameterName +"' should be type of String")
                         return false;
@@ -123,6 +125,24 @@ var optimoveSDK = function(){
         })
     }
 
+    var getVisitorsInfoObj = function(){
+
+        var visitorsInfo = optitrackModule.getOptitrackVisitorInfo();
+        var visitorInfoObject = new Object();
+       
+        if(visitorsInfo != undefined ){
+            
+            visitorInfoObject.visitorId = visitorsInfo[1];
+            visitorInfoObject.visitCount = visitorsInfo[3];
+                
+        }else{
+                logger.log("error","in getVisitorsInfoObj Optitrack");
+                visitorInfoObject = undefined;
+        } 
+
+        return visitorInfoObject;      
+    }
+
     var reportEvent = function(eventName, parameters){
         try{
             var validEvent = validateEvent(eventName, parameters);
@@ -148,9 +168,15 @@ var optimoveSDK = function(){
 
     var reportEventRealtime = function(validEvent){
        logger.log("info","in reportEvent Real time");
-        validEvent.userId = _userId;
+              
+       if(_userId != undefined){
+        validEvent.userId = _userId; // -Gil I think this is redundant
+       }
+       
         if(_configuration.enableOptitrack && _configuration.enableVisitors){
-            validEvent.visitorData = getVisitorsObj();
+
+            validEvent.visitorData = getVisitorsInfoObj();
+
         }else if(!_userId){
             logger.log("info", "parameter userId is required, please call setUserId method")
             return false;
@@ -237,7 +263,7 @@ var optimoveSDK = function(){
             };
 
             xmlhttp.send(paramsString);
-        }
+        }        
 
         var reportEvent = function (event) {
             var params = {};
@@ -247,7 +273,7 @@ var optimoveSDK = function(){
 
             callRealtimeAsync("reportEvent", {
                     tid : _configuration.realtimeMetaData.realtimeToken,
-                    cid : event.userId,
+                    cid : optitrackModule.getUserId(optitrackModule),
                     eid : event.eventMetadata.id,
                     visitorId : event.visitorData ? event.visitorData.visitorId : null,
                     visitCount : event.visitorData ? event.visitorData.visitCount : null,
@@ -288,6 +314,7 @@ var optimoveSDK = function(){
         var updatedVisitorId_param_name = "updatedVisitorId";
         var clientCustomerIDKey = '215d26f4be2047f348066e44ee7fe3d6';
         var userAgentIDKey = '11602c8b76fe7626ca586081b94892e4';
+        var enableLinkTrackingIDKey = '79352f4d05f73d22c209bbe4689dbaca'; 
         // ------------------------------ SDK public member functions ------------------------------
 
         // ---------------------------------------
@@ -356,12 +383,13 @@ var optimoveSDK = function(){
         // if the optiTrackDimensionId = -1 we define the parameter not to be delivered to the Optitrack.
         // ---------------------------------------
         var  logOptitrackCustomEvent = function (THIS, eventId, event_parameters) {
-            try{
-                if(event_parameters == undefined)
-                {
-                    return false;
-                }
 
+            
+            if(event_parameters == undefined)
+            {
+                return false;
+            }
+            try{
                 cleanCustomDimensions(); // cleaning the previous usage
                 var numOfAddedParams = 0;
                 var eventConfig = _sdkConfig.events[eventId];
@@ -397,10 +425,10 @@ var optimoveSDK = function(){
                     _tracker.trackEvent(LogEventCategory_name, eventId);
                     return true;
                 }else{
-                    throw "_tracker is undefined !!";
+                    throw "OptiTrackModule:_tracker is undefined !!";
                 }
             }catch(error){
-                throw "logOptitrackCustomEvent Failed!!";
+                throw "OptiTrackModule:logOptitrackCustomEvent Failed!!, error =  " + error;
             }
 
         };
@@ -411,9 +439,14 @@ var optimoveSDK = function(){
         // Send Optitrack Infrastructure with the Loading Page Event.
         // ---------------------------------------
         var logOptitrackPageVisit = function (THIS, pageURL, pageTitle, category) {
+
             try{
                 var isValidURL = validatePageURL(pageURL);
 
+                if(_tracker == undefined){
+
+
+                }
                 updateContextUserId(THIS);
 
                 if(_sdkConfig.isSPASite == true)
@@ -428,9 +461,7 @@ var optimoveSDK = function(){
                 if(isValidURL == false)
                 {
                     throw 'customURL-' + pageURL  + 'is not a valid URL';
-                }
-                // enable link tracking
-                _tracker.enableLinkTracking(true);
+                }              
 
                 if(_sdkConfig.optitrackMetaData.enableHeartBeatTimer == true )
                 {
@@ -463,7 +494,7 @@ var optimoveSDK = function(){
                 }
             }catch(error){
 
-
+                throw "OptiTrackModule:logOptitrackPageVisit Failed!!, error =  " + error;
             }
         };
 
@@ -477,17 +508,21 @@ var optimoveSDK = function(){
         // ---------------------------------------
         var processEmailStitch = function (THIS, pageURL) {
             // We might have not Load the Piwik Yet
+            
+            var stitchDataFound = false;
+            var stitchEvent = "stitchEvent"
+            var sourcePublicCustomerId = "sourcePublicCustomerId";
+            var sourceVisitorId = "sourceVisitorId";
+            var targetVsitorId = "targetVsitorId";
+            var stitchData = {}
+            
+            var sourcePCIDParamConfig = null;
+            var sourceVisitorIdParamConfig = null;
+            var targetVsitorIdIdParamConfig = null;
             try {
-                var stitchDataFound = false;
-                var stitchEvent = "stitchEvent"
-                var sourcePublicCustomerId = "sourcePublicCustomerId";
-                var sourceVisitorId = "sourceVisitorId";
-                var targetVsitorId = "targetVsitorId";
-                var stitchData = {}
+
                 var eventConfig = getCustomEventConfigById(StitchUsersEvent_name);
-                var sourcePCIDParamConfig = null;
-                var sourceVisitorIdParamConfig = null;
-                var targetVsitorIdIdParamConfig = null;
+
                 if(eventConfig != null)
                 {
                     sourcePCIDParamConfig = getCustomEventParamFromConfig(eventConfig, sourcePublicCustomerId);
@@ -540,8 +575,8 @@ var optimoveSDK = function(){
 
                     _tracker.trackEvent(LogEventCategory_name, StitchUsersEvent_name)
                 }
-            } catch (err) {
-
+             } catch (error) {
+                throw "OptiTrackModule:processEmailStitch Failed!!, error =  " + error;
             }
         };
 
@@ -592,8 +627,8 @@ var optimoveSDK = function(){
                         }
                     })
                 }
-            } catch (err) {
-
+            } catch (error) {
+                throw "OptiTrackModule:getOptimoveStitchData Failed!!, error =  " + error;
             }
             return jsonData;
         };
@@ -607,7 +642,7 @@ var optimoveSDK = function(){
 
             logOptitrackCustomEvent(THIS,PageCategoryEvent_name, {category: category});
 
-        };
+        };                
 
         // ---------------------------------------
         // Function: logUserAgentHeaderEvent
@@ -616,15 +651,20 @@ var optimoveSDK = function(){
         // ---------------------------------------
         var logUserAgentHeaderEvent= function (THIS){
 
-            var userAgenteHeaderPersisted = getPersistedSDKSessionData(THIS, userAgentIDKey);
-            if(userAgenteHeaderPersisted != null){
-                _logger.log('info', 'User-Agent Header Already triggered');
-                return;
+            try{
+                var userAgenteHeaderPersisted = getPersistedSDKSessionData(THIS, userAgentIDKey);
+                if(userAgenteHeaderPersisted != null){
+                    _logger.log('info', 'User-Agent Header Already triggered');
+                    return;
+                }
+                if(typeof navigator != 'undefined' && typeof navigator.userAgent != 'undefined' ){
+                    logOptitrackCustomEvent(THIS,UserAgentHeaderEvent_name, {user_agent_header: navigator.userAgent});
+                    persistSDKSessionData(THIS, userAgentIDKey, true);
+                }
+            }catch(error){
+                throw "OptiTrackModule:logUserAgentHeaderEvent Failed!!, error =  " + error;
             }
-            if(typeof navigator != 'undefined' && typeof navigator.userAgent != 'undefined' ){
-                logOptitrackCustomEvent(THIS,UserAgentHeaderEvent_name, {user_agent_header: navigator.userAgent});
-                persistSDKSessionData(THIS, userAgentIDKey, true);
-            }
+           
         };
 
         // ---------------------------------------
@@ -641,8 +681,8 @@ var optimoveSDK = function(){
 
                 logOptitrackCustomEvent(THIS,SetEmailEvent_name, {email: email});
 
-            } catch (err) {
-
+            } catch (error) {
+                throw "OptiTrackModule:logOptitrackUserEmail Failed!!, error =  " + error;
             }
         };
 
@@ -671,8 +711,8 @@ var optimoveSDK = function(){
                         }
                     }
                 }
-            } catch (err) {
-
+            } catch (error) {
+                throw "OptiTrackModule:setOptitrackUserId Failed!!, error = " +  error;
             }
         };
 
@@ -715,9 +755,32 @@ var optimoveSDK = function(){
                     _tracker.trackEvent(LogEventCategory_name, SetUserIdEvent_name);
                 }
 
-            } catch (err) {
-
+            } catch (error) {
+                throw "OptiTrackModule:logSetUserIdEvent Failed!!, error =  " + error;
             }
+        };
+
+        // ---------------------------------------
+        // Function: enableLinkTracking
+        // Args: None
+        // calls piwik API enableLinkTracking.
+        // this - Install link tracking on all applicable link elements
+        // ---------------------------------------
+        var enableLinkTracking= function (THIS){
+            try{
+                var userenableLinkTrackingPersisted = getPersistedSDKSessionData(THIS, enableLinkTrackingIDKey);
+                if(userenableLinkTrackingPersisted != null){
+                    _logger.log('info', 'user enable Link Tracking Persisted Already triggered');
+                    return;
+                }else{                    
+                    _tracker.enableLinkTracking( true );
+                    persistSDKSessionData(THIS, enableLinkTrackingIDKey, true);
+                }
+            }catch(error){
+                throw "OptiTrackModule:enableLinkTracking Failed!!, error =  " + error;
+            }
+            
+            
         };
 
         // ---------------------------------------
@@ -733,7 +796,7 @@ var optimoveSDK = function(){
                 }else{
                     throw  'tracker is not defined';
                 }
-            }catch (err) {
+            }catch (error) {
 
             }
 
@@ -1032,7 +1095,9 @@ var optimoveSDK = function(){
             setUserId : setUserId,
             logUserEmail: logUserEmail,
             logEvent : logEvent,
-            getOptitrackVisitorInfo: getOptitrackVisitorInfo
+            getOptitrackVisitorInfo: getOptitrackVisitorInfo,
+            getUserId: getPersistedUserId
+
         };
 
 
@@ -1070,7 +1135,7 @@ var optimoveSDK = function(){
             {
                 cookieMatcherUserId = userId;
             }else{
-                var info  = getVisitorsObj();
+                var info  = getVisitorsInfoObj();
                 cookieMatcherUserId = info.visitorId;
             }
 
@@ -1085,13 +1150,7 @@ var optimoveSDK = function(){
         };
     }();
 
-    var getVisitorsObj = function(){
-        var visitorsInfo = optitrackModule.getOptitrackVisitorInfo();
-        return {
-            visitorId : visitorsInfo[1],
-            visitCount : visitorsInfo[3]
-        }
-    };
+    
 
     var _API = {
         getVersion : function(){
