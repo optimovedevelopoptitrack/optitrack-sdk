@@ -1,7 +1,7 @@
 'use strict'
 
 var optimoveSDK = function(){
-    var _version = "1.0.4";
+    var _version = "1.0.5";
     var _sdkDomain = "http://sdk-cdn.optimove.net/";
     var _configuration;
     var _userId = null;
@@ -394,6 +394,8 @@ var optimoveSDK = function(){
                 var numOfAddedParams = 0;
                 var eventConfig = _sdkConfig.events[eventId];
                 var parameterConfigsNames = Object.getOwnPropertyNames(eventConfig.parameters);
+                var numOfConfiguredParameters = parameterConfigsNames.length;
+
                 parameterConfigsNames.forEach(function (paramName) {
                     var currParamConfig = eventConfig.parameters[paramName];
                     // Check if the parameter is given in the Event Argumen
@@ -414,7 +416,7 @@ var optimoveSDK = function(){
                     }
                 });
 
-                if(numOfAddedParams > 0 && typeof _tracker != 'undefined')
+                if(typeof _tracker != 'undefined')
                 {
 
                     var configEventId = eventConfig.id;
@@ -464,11 +466,10 @@ var optimoveSDK = function(){
                 }              
 
                 _tracker.enableLinkTracking( true );
-                
-                if(_sdkConfig.optitrackMetaData.enableHeartBeatTimer == true )
-                {
-                    _tracker.enableHeartBeatTimer(_sdkConfig.optitrackMetaData.heartBeatTimer);
-                }
+                // if(_sdkConfig.optitrackMetaData.enableHeartBeatTimer == true )
+                // {
+                //     _tracker.enableHeartBeatTimer(_sdkConfig.optitrackMetaData.heartBeatTimer);
+                // }
 
                 _tracker.setCustomUrl(pageURL);
 
