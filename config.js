@@ -26,13 +26,14 @@ var optimoveTenantConfiguration = {
     },
     cookieMatcherMetaData:{  
         optimoveCookieMatcherId: undefined,
+        tenantToken: undefined
     },
 
     isSPA: false,
     enableOptitrack: true,
     enableVisitors: true,
     enableRealtime: true,   
-    supportCookieMatcher: false,       
+    supportCookieMatcher: true,       
     supportUserEmailStitch: true,     
  
     events: {
