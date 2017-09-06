@@ -1,7 +1,7 @@
 'use strict'
 
 var optimoveSDK = function(){
-    var _version = "1.0.5";
+    var _version = "1.0.6";
     var _sdkDomain = "http://sdk-cdn.optimove.net/";
     var _configuration;
     var _userId = null;
@@ -358,7 +358,7 @@ var optimoveSDK = function(){
         // Log User email
         // ---------------------------------------
         var logUserEmail = function (email) {
-            this.logOptitrackUserEmail(this, email);
+            logOptitrackUserEmail(this, email);
         }
 
         // ---------------------------------------
@@ -681,7 +681,7 @@ var optimoveSDK = function(){
         // Args: email - the User email
         // Sets the email in Optitrack Infrastructure
         // ---------------------------------------
-        var logOptitrackUserEmail = function (THIS, emailValue) {
+        var logOptitrackUserEmail = function (THIS, email) {
             try {
                 var isValidEmail = validateEmail(email);
                 if (isValidEmail == false) {
