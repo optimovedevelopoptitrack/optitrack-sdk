@@ -168,15 +168,8 @@ var optimoveSDK = function(){
 
     var reportEventRealtime = function(validEvent){
        logger.log("info","in reportEvent Real time");
-              
-       if(_userId != undefined){
-        validEvent.userId = _userId; // -Gil I think this is redundant
-       }
-       
-        if(_configuration.enableOptitrack && _configuration.enableVisitors){
-
+       if(_configuration.enableOptitrack && _configuration.enableVisitors){
             validEvent.visitorData = getVisitorsInfoObj();
-
         }else if(!_userId){
             logger.log("info", "parameter userId is required, please call setUserId method")
             return false;
@@ -273,7 +266,7 @@ var optimoveSDK = function(){
 
             callRealtimeAsync("reportEvent", {
                     tid : _configuration.realtimeMetaData.realtimeToken,
-                    cid : optitrackModule.getUserId(optitrackModule),
+                    cid : _userId,
                     eid : event.eventMetadata.id,
                     visitorId : event.visitorData ? event.visitorData.visitorId : null,
                     visitCount : event.visitorData ? event.visitorData.visitCount : null,
