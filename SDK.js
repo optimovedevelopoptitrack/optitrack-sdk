@@ -285,15 +285,17 @@ var optimoveSDK = function(){
     }()
 
     var optitrackModule = function(){
-        var _userId 		= null;
-        var _ot_endpoint 	= null;
-        var _ot_tenantId 	= null;
-        var _piwikURL 		= null;
-        var _configURL  	= null;
-        var _tracker 		= null;
-        var _sdkConfig 		= null;
-        var _logger         = null;
-        var _pageVisitCount = 0;
+        var _userId 		    = null;
+        var _origVisitorId      = null;
+        var _updatedVisitorId   = null;
+        var _ot_endpoint 	    = null;
+        var _ot_tenantId 	    = null;
+        var _piwikURL 		    = null;
+        var _configURL  	    = null;
+        var _tracker 		    = null;
+        var _sdkConfig 		    = null;
+        var _logger             = null;
+        var _pageVisitCount     = 0;
         // ------------------------------ Event Const Values ------------------------------
         var LogEventCategory_name = 'LogEvent';
         var SetUserIdEvent_name = 'set_user_id_event';
@@ -706,10 +708,10 @@ var optimoveSDK = function(){
                         var existUserId = _tracker.getUserId();
                         if(existUserId != updatedUserId)
                         {
-                            var origVisitorId = _tracker.getVisitorId();
+                            _origVisitorId = _tracker.getVisitorId();
                             _tracker.setUserId(updatedUserId);
                             _userId = updatedUserId;
-                            var updatedVisitorId = _tracker.getVisitorId();
+                            _updatedVisitorId = _tracker.getVisitorId();
                             logSetUserIdEvent(THIS, origVisitorId, updatedUserId, updatedVisitorId);
                         }
                     }
@@ -719,6 +721,31 @@ var optimoveSDK = function(){
                 _logger.log('error', errMsg);
             }
         };
+
+
+        // ---------------------------------------
+        // Function: getOptitrackUserInfo
+        // Args: THIS
+        // returns the User Info: including:
+        // visitor_id, user_id, updatedVisitor_id.
+        // updatedVisitor_id - is created after setUserId
+        // ---------------------------------------
+        var getOptitrackUserInfo = function (THIS) {  
+                      
+            try {
+               var userInfo = {
+                 userId: _userId,
+                 origVisitorId: _origVisitorId,
+                 updatedVisitorId: _updatedVisitorId
+            };
+            return userInfo;
+
+            } catch (error) {
+                var errMsg = "OptiTrackModule:getOptitrackUserInfo  Failed!!, error = " +  error;               
+                _logger.log('error', errMsg);
+            }
+        };
+
 
         // ---------------------------------------
         // Function: logSetUserIdEvent
